@@ -28,10 +28,12 @@ export const Sidebar = () => {
     areas, 
     kecamatans,
     selectedKecamatanId,
+    selectedKecamatanIds,
     selectedAreaId, 
     selectedClusterId,
     selectedRegionId,
     setSelectedKecamatan,
+    toggleKecamatanSelection,
     setSelectedArea,
     setSelectedCluster,
     setSelectedRegion,
@@ -183,10 +185,10 @@ export const Sidebar = () => {
                                     key={kecamatan.id}
                                     className={cn(
                                       "flex items-center justify-between p-1 rounded-md cursor-pointer text-[10px] transition-colors",
-                                      selectedKecamatanId === kecamatan.id ? "bg-slate-200 text-slate-900 font-bold" : "text-slate-400 hover:bg-slate-50"
+                                      selectedKecamatanIds.includes(kecamatan.id) ? "bg-slate-200 text-slate-900 font-bold" : "text-slate-400 hover:bg-slate-50"
                                     )}
-                                    onClick={() => {
-                                      setSelectedKecamatan(kecamatan.id);
+                                    onClick={(e) => {
+                                      toggleKecamatanSelection(kecamatan.id, e.shiftKey);
                                       setSelectedArea(area.id);
                                       setSelectedCluster(cluster.id);
                                     }}

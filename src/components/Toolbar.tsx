@@ -141,7 +141,7 @@ export const Toolbar = () => {
   };
 
   return (
-    <div className="h-16 border-b border-slate-200 bg-white px-4 md:px-6 flex items-center justify-between shadow-sm z-10 gap-4 overflow-x-auto flex-nowrap scrollbar-hide">
+    <div className="h-16 border-b border-slate-200 bg-white px-4 md:px-6 flex items-center justify-between shadow-sm z-10 gap-4 overflow-x-auto flex-nowrap">
       <div className="flex items-center justify-start gap-2 md:gap-4 flex-shrink-0">
         <div className="flex items-center gap-2 mr-2 md:mr-6">
           <div className="p-2 bg-purple-800 rounded-lg text-white">

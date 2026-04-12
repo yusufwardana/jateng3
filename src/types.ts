@@ -40,6 +40,7 @@ export interface MapState {
   areas: Area[];
   kecamatans: Kecamatan[];
   selectedKecamatanId: string | null;
+  selectedKecamatanIds: string[];
   selectedAreaId: string | null;
   selectedClusterId: string | null;
   selectedRegionId: string | null;

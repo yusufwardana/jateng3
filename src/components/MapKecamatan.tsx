@@ -9,12 +9,21 @@ interface MapKecamatanProps {
 }
 
 export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
-  const { selectedKecamatanId, setSelectedKecamatan, updateKecamatan, isAllLocked, user, zoom } = useMapStore();
+  const { 
+    selectedKecamatanIds, 
+    toggleKecamatanSelection,
+    moveSelectedKecamatans,
+    moveSelectedKecamatansExcept,
+    updateKecamatan, 
+    isAllLocked, 
+    user, 
+    zoom 
+  } = useMapStore();
   const [isDragging, setIsDragging] = useState(false);
   const [bbox, setBbox] = useState<DOMRect | null>(null);
   const pathRef = useRef<SVGPathElement>(null);
   
-  const isSelected = selectedKecamatanId === kecamatan.id;
+  const isSelected = selectedKecamatanIds.includes(kecamatan.id);
   const isLocked = isAllLocked || kecamatan.isLocked || !user; // Lock if not logged in
 
   useEffect(() => {
@@ -34,27 +43,47 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
         const zoomSensitivity = 0.001;
         const delta = -e.deltaY * zoomSensitivity;
         const newScale = Math.max(0.1, Math.min(3, (kecamatan.scale || 1) + delta));
-        updateKecamatan(kecamatan.id, { scale: newScale });
+        
+        if (selectedKecamatanIds.length > 1) {
+          // Optional: scale all selected
+          selectedKecamatanIds.forEach(id => {
+            const k = useMapStore.getState().kecamatans.find(k => k.id === id);
+            if (k && !k.isLocked) {
+              updateKecamatan(id, { scale: Math.max(0.1, Math.min(3, (k.scale || 1) + delta)) });
+            }
+          });
+        } else {
+          updateKecamatan(kecamatan.id, { scale: newScale });
+        }
       }
     };
 
     element.addEventListener('wheel', handleWheel, { passive: false });
     return () => element.removeEventListener('wheel', handleWheel);
-  }, [isLocked, isSelected, kecamatan.scale, kecamatan.id, updateKecamatan]);
+  }, [isLocked, isSelected, kecamatan.scale, kecamatan.id, updateKecamatan, selectedKecamatanIds]);
 
   return (
     <motion.g
       drag={!isLocked}
       dragMomentum={false}
       onDragStart={() => setIsDragging(true)}
+      onDrag={(_, info) => {
+        if (selectedKecamatanIds.includes(kecamatan.id) && selectedKecamatanIds.length > 1) {
+          const dx = info.delta.x / zoom;
+          const dy = info.delta.y / zoom;
+          moveSelectedKecamatansExcept(kecamatan.id, dx, dy);
+        }
+      }}
       onDragEnd={(_, info) => {
         setIsDragging(false);
-        // Adjust offset by zoom level so it doesn't fly away when zoomed in/out
-        const newX = kecamatan.position.x + (info.offset.x / zoom);
-        const newY = kecamatan.position.y + (info.offset.y / zoom);
+        const dx = info.offset.x / zoom;
+        const dy = info.offset.y / zoom;
         
         updateKecamatan(kecamatan.id, {
-          position: { x: newX, y: newY }
+          position: { 
+            x: kecamatan.position.x + dx, 
+            y: kecamatan.position.y + dy 
+          }
         });
       }}
       whileDrag={{ 
@@ -75,12 +104,13 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
       transition={{ type: 'tween', duration: 0.1 }}
       onClick={(e) => {
         e.stopPropagation();
-        setSelectedKecamatan(kecamatan.id);
+        toggleKecamatanSelection(kecamatan.id, e.shiftKey);
       }}
       className={cn(
-        "transition-colors duration-200",
+        "transition-colors duration-200 map-kecamatan",
         isLocked ? "cursor-default" : "cursor-grab active:cursor-grabbing"
       )}
+      data-id={kecamatan.id}
     >
       {/* Bounding Box */}
       {(isDragging || isSelected) && bbox && (

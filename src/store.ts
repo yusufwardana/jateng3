@@ -16,6 +16,10 @@ interface MapStore extends MapState {
   updateCluster: (id: string, updates: Partial<Cluster>) => void;
   updateRegion: (id: string, updates: Partial<Region>) => void;
   setSelectedKecamatan: (id: string | null) => void;
+  toggleKecamatanSelection: (id: string, multi: boolean) => void;
+  setSelectedKecamatanIds: (ids: string[]) => void;
+  moveSelectedKecamatans: (dx: number, dy: number) => void;
+  moveSelectedKecamatansExcept: (excludeId: string, dx: number, dy: number) => void;
   setSelectedArea: (id: string | null) => void;
   setSelectedCluster: (id: string | null) => void;
   setSelectedRegion: (id: string | null) => void;
@@ -44,6 +48,7 @@ export const useMapStore = create<MapStore>()(
       areas: [{ id: 'default-area', name: 'Main Area', color: '#3b82f6', clusterId: 'default-cluster' }],
       kecamatans: [],
       selectedKecamatanId: null,
+      selectedKecamatanIds: [],
       selectedAreaId: 'default-area',
       selectedClusterId: 'default-cluster',
       selectedRegionId: 'jateng-3',
@@ -76,7 +81,38 @@ export const useMapStore = create<MapStore>()(
         regions: state.regions.map((r) => (r.id === id ? { ...r, ...updates } : r))
       })),
 
-      setSelectedKecamatan: (id) => set({ selectedKecamatanId: id }),
+      setSelectedKecamatan: (id) => set({ selectedKecamatanId: id, selectedKecamatanIds: id ? [id] : [] }),
+      toggleKecamatanSelection: (id, multi) => set((state) => {
+        if (!multi) {
+          return { selectedKecamatanId: id, selectedKecamatanIds: [id] };
+        }
+        const isSelected = state.selectedKecamatanIds.includes(id);
+        const newIds = isSelected 
+          ? state.selectedKecamatanIds.filter(kId => kId !== id)
+          : [...state.selectedKecamatanIds, id];
+        return { 
+          selectedKecamatanIds: newIds,
+          selectedKecamatanId: newIds.length > 0 ? newIds[newIds.length - 1] : null
+        };
+      }),
+      setSelectedKecamatanIds: (ids) => set({ 
+        selectedKecamatanIds: ids,
+        selectedKecamatanId: ids.length > 0 ? ids[ids.length - 1] : null
+      }),
+      moveSelectedKecamatans: (dx, dy) => set((state) => ({
+        kecamatans: state.kecamatans.map(k => 
+          state.selectedKecamatanIds.includes(k.id) && !k.isLocked
+            ? { ...k, position: { x: k.position.x + dx, y: k.position.y + dy } }
+            : k
+        )
+      })),
+      moveSelectedKecamatansExcept: (excludeId, dx, dy) => set((state) => ({
+        kecamatans: state.kecamatans.map(k => 
+          k.id !== excludeId && state.selectedKecamatanIds.includes(k.id) && !k.isLocked
+            ? { ...k, position: { x: k.position.x + dx, y: k.position.y + dy } }
+            : k
+        )
+      })),
       setSelectedArea: (id) => set({ selectedAreaId: id }),
       setSelectedCluster: (id) => set({ selectedClusterId: id }),
       setSelectedRegion: (id) => set({ selectedRegionId: id }),
@@ -86,7 +122,8 @@ export const useMapStore = create<MapStore>()(
 
       deleteKecamatan: (id) => set((state) => ({
         kecamatans: state.kecamatans.filter((k) => k.id !== id),
-        selectedKecamatanId: state.selectedKecamatanId === id ? null : state.selectedKecamatanId
+        selectedKecamatanId: state.selectedKecamatanId === id ? null : state.selectedKecamatanId,
+        selectedKecamatanIds: state.selectedKecamatanIds.filter(kId => kId !== id)
       })),
 
       deleteArea: (id) => set((state) => ({
