@@ -25,8 +25,11 @@ interface MapStore extends MapState {
   // Supabase Actions
   saveToSupabase: () => Promise<void>;
   loadFromSupabase: () => Promise<void>;
+  setUser: (user: any) => void;
+  signOut: () => Promise<void>;
   isSaving: boolean;
   isLoading: boolean;
+  user: any;
 }
 
 export const useMapStore = create<MapStore>()(
@@ -44,6 +47,7 @@ export const useMapStore = create<MapStore>()(
       pan: { x: 0, y: 0 },
       isSaving: false,
       isLoading: false,
+      user: null,
 
       addRegion: (region) => set((state) => ({ regions: [...state.regions, region] })),
       addCluster: (cluster) => set((state) => ({ clusters: [...state.clusters, cluster] })),
@@ -153,11 +157,18 @@ export const useMapStore = create<MapStore>()(
         } finally {
           set({ isLoading: false });
         }
+      },
+
+      setUser: (user) => set({ user }),
+
+      signOut: async () => {
+        await supabase.auth.signOut();
+        set({ user: null });
       }
     }),
     {
       partialize: (state) => {
-        const { zoom, pan, selectedKecamatanId, selectedAreaId, selectedClusterId, selectedRegionId, isSaving, isLoading, ...rest } = state;
+        const { zoom, pan, selectedKecamatanId, selectedAreaId, selectedClusterId, selectedRegionId, isSaving, isLoading, user, ...rest } = state;
         return rest;
       },
     }

@@ -39,25 +39,22 @@ export const Toolbar = () => {
     saveToSupabase,
     loadFromSupabase,
     isSaving,
-    isLoading
+    isLoading,
+    user,
+    signOut
   } = useMapStore();
 
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
   const handleLogin = async () => {
-    // In a real app, you'd use supabase.auth.signInWithOAuth or similar
-    alert('Please configure Supabase Auth in your Supabase dashboard.');
+    try {
+      const { signInWithGoogle } = await import('../lib/supabase');
+      const url = await signInWithGoogle();
+      window.open(url, 'google_auth', 'width=600,height=700');
+    } catch (error) {
+      console.error('Login error:', error);
+    }
   };
 
-  const handleLogout = () => supabase.auth.signOut();
+  const handleLogout = () => signOut();
 
   const { undo, redo, pastStates, futureStates } = useStore(useMapStore.temporal, (state) => state);
 

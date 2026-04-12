@@ -13,9 +13,13 @@ import {
   Trash2, 
   ChevronRight, 
   MapPin,
-  FolderTree
+  FolderTree,
+  LogOut,
+  LogIn,
+  User as UserIcon
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { signInWithGoogle } from '../lib/supabase';
 
 export const Sidebar = () => {
   const { 
@@ -38,8 +42,19 @@ export const Sidebar = () => {
     deleteArea,
     deleteCluster,
     addCluster,
-    addArea
+    addArea,
+    user,
+    signOut
   } = useMapStore();
+
+  const handleLogin = async () => {
+    try {
+      const url = await signInWithGoogle();
+      window.open(url, 'google_auth', 'width=600,height=700');
+    } catch (error) {
+      console.error('Login error:', error);
+    }
+  };
 
   const selectedKecamatan = kecamatans.find(k => k.id === selectedKecamatanId);
   const selectedArea = areas.find(a => a.id === selectedAreaId);
@@ -352,6 +367,49 @@ export const Sidebar = () => {
           </ScrollArea>
         </TabsContent>
       </Tabs>
+
+      <div className="p-4 border-t border-slate-200 bg-slate-50">
+        {user ? (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                {user.user_metadata?.avatar_url ? (
+                  <img 
+                    src={user.user_metadata.avatar_url} 
+                    alt="Avatar" 
+                    className="w-full h-full rounded-full"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <UserIcon size={16} className="text-blue-600" />
+                )}
+              </div>
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-sm font-medium text-slate-900 truncate">
+                  {user.user_metadata?.full_name || user.email}
+                </span>
+                <span className="text-[10px] text-slate-500 truncate">{user.email}</span>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 text-slate-400 hover:text-red-500"
+              onClick={() => signOut()}
+            >
+              <LogOut size={16} />
+            </Button>
+          </div>
+        ) : (
+          <Button 
+            className="w-full flex items-center gap-2 justify-center bg-white text-slate-900 border border-slate-200 hover:bg-slate-50"
+            onClick={handleLogin}
+          >
+            <LogIn size={16} />
+            Sign in with Google
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
