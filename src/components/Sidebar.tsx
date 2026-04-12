@@ -1,11 +1,11 @@
 import { useMapStore } from '../store';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Slider } from './ui/slider';
-import { ScrollArea } from './ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Separator } from './ui/separator';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 import { 
   Layers, 
   Settings2, 
