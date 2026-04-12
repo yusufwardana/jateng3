@@ -143,13 +143,13 @@ export const Toolbar = () => {
   };
 
   return (
-    <div className="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between shadow-sm z-10 gap-4 overflow-x-auto flex-nowrap">
-      <div className="flex items-center justify-start gap-4 flex-shrink-0">
-        <div className="flex items-center gap-2 mr-6">
+    <div className="h-16 border-b border-slate-200 bg-white px-4 flex items-center justify-start shadow-sm z-10 gap-6 overflow-hidden flex-nowrap">
+      <div className="flex items-center justify-start gap-4 flex-shrink-0 min-w-max">
+        <div className="flex items-center gap-2 mr-2">
           <div className="p-2 bg-purple-800 rounded-lg text-white">
             <MapIcon size={20} />
           </div>
-          <h1 className="font-bold text-xl tracking-tight text-purple-900">Jateng 3</h1>
+          <h1 className="font-bold text-lg tracking-tight text-purple-900 whitespace-nowrap">Jateng 3</h1>
         </div>
 
         <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
@@ -215,7 +215,9 @@ export const Toolbar = () => {
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-3 flex-shrink-0">
+      <div className="flex-1" />
+
+      <div className="flex items-center justify-end gap-3 flex-shrink-0 min-w-max">
         {user ? (
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-end">
