@@ -143,8 +143,15 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
           y={bbox ? bbox.y + bbox.height / 2 : "50%"}
           textAnchor="middle"
           dominantBaseline="middle"
-          className="pointer-events-none select-none text-[10px] font-bold fill-slate-800"
-          style={{ textShadow: '0 1px 2px rgba(255,255,255,0.5)' }}
+          className="pointer-events-none select-none text-[14px] font-extrabold fill-slate-900"
+          style={{ 
+            paintOrder: 'stroke',
+            stroke: '#ffffff',
+            strokeWidth: '3px',
+            strokeLinecap: 'round',
+            strokeLinejoin: 'round',
+            filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.2))'
+          }}
         >
           {kecamatan.label}
         </text>
