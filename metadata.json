@@ -1,0 +1,5 @@
+{
+  "name": "Atlas Mapper - JATENG 3",
+  "description": "Mapping tool for JATENG 3 region with Supabase persistence and Vercel-ready deployment.",
+  "requestFramePermissions": []
+}
