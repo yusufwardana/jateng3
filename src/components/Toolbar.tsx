@@ -49,7 +49,9 @@ export const Toolbar = () => {
     isAllLocked,
     setAllLocked,
     lastSaved,
-    user
+    user,
+    selectedKecamatanIds,
+    setSelectedKecamatan
   } = useMapStore();
 
   const [email, setEmail] = useState('');
@@ -191,6 +193,26 @@ export const Toolbar = () => {
             <Redo2 size={16} />
           </Button>
         </div>
+
+        {selectedKecamatanIds.length > 0 && user && (
+          <>
+            <Separator orientation="vertical" className="h-8 mx-2" />
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              className="gap-2 h-8 px-3"
+              onClick={() => {
+                if (confirm(`Delete ${selectedKecamatanIds.length} selected kecamatans?`)) {
+                  selectedKecamatanIds.forEach(id => deleteKecamatan(id));
+                  setSelectedKecamatan(null);
+                }
+              }}
+            >
+              <Trash2 size={14} />
+              <span>Delete ({selectedKecamatanIds.length})</span>
+            </Button>
+          </>
+        )}
       </div>
 
       <div className="flex items-center justify-end gap-3 flex-shrink-0">

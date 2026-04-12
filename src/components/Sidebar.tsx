@@ -201,13 +201,15 @@ export const Sidebar = () => {
                                       <Button 
                                         variant="ghost" 
                                         size="icon" 
-                                        className="h-3 w-3 opacity-0 group-hover:opacity-100 hover:text-red-500"
+                                        className="h-5 w-5 text-slate-300 hover:text-red-500"
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          deleteKecamatan(kecamatan.id);
+                                          if (confirm(`Delete kecamatan "${kecamatan.name}"?`)) {
+                                            deleteKecamatan(kecamatan.id);
+                                          }
                                         }}
                                       >
-                                        <Trash2 size={8} />
+                                        <Trash2 size={12} />
                                       </Button>
                                     )}
                                   </div>
@@ -438,6 +440,34 @@ export const Sidebar = () => {
                         step={0.05}
                         onValueChange={(vals: number[]) => updateKecamatan(selectedKecamatan.id, { scale: vals[0] })}
                       />
+                    </div>
+
+                    <Separator className="my-4" />
+                    
+                    <div className="pt-2">
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        className="w-full gap-2"
+                        onClick={() => {
+                          if (selectedKecamatanIds.length > 1) {
+                            if (confirm(`Delete ${selectedKecamatanIds.length} selected kecamatans?`)) {
+                              selectedKecamatanIds.forEach(id => deleteKecamatan(id));
+                              setSelectedKecamatan(null);
+                            }
+                          } else {
+                            if (confirm(`Delete kecamatan "${selectedKecamatan.name}"?`)) {
+                              deleteKecamatan(selectedKecamatan.id);
+                              setSelectedKecamatan(null);
+                            }
+                          }
+                        }}
+                      >
+                        <Trash2 size={14} />
+                        {selectedKecamatanIds.length > 1 
+                          ? `Delete ${selectedKecamatanIds.length} Items` 
+                          : 'Delete Kecamatan'}
+                      </Button>
                     </div>
                   </div>
                 )}
