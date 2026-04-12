@@ -162,7 +162,7 @@ export const Toolbar = () => {
           </Button>
         </div>
 
-        <Button variant="ghost" size="sm" className="gap-2 text-slate-600 px-3" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>
+        <Button variant="ghost" size="sm" className="gap-2 text-slate-600 px-3" onClick={() => { setZoom(1); setPan({ x: 300, y: 100 }); }}>
           <Maximize size={14} />
           <span>Reset View</span>
         </Button>

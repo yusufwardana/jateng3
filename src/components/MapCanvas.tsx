@@ -6,8 +6,9 @@ export const MapCanvas = () => {
   const { kecamatans, areas, clusters, regions, zoom, setZoom, pan, setPan, setSelectedKecamatan, setSelectedKecamatanIds, selectedKecamatanIds } = useMapStore();
   const [isPanning, setIsPanning] = useState(false);
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const gRef = useRef<SVGGElement>(null);
 
   const visibleKecamatans = kecamatans.filter((kec) => {
     if (kec.isVisible === false) return false;
@@ -21,91 +22,83 @@ export const MapCanvas = () => {
   });
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = containerRef.current;
+    if (!container) return;
 
-    // Center the canvas initially
-    canvas.scrollLeft = (canvas.scrollWidth - canvas.clientWidth) / 2;
-    canvas.scrollTop = (canvas.scrollHeight - canvas.clientHeight) / 2;
-  }, []);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    // Set initial pan to center the map roughly
+    if (pan.x === 0 && pan.y === 0) {
+      setPan({ x: 300, y: 100 });
+    }
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       
-      // Zoom
       if (e.ctrlKey || !e.shiftKey) {
-        const zoomSensitivity = 0.001;
+        // Zoom
+        const zoomSensitivity = 0.002;
         const delta = -e.deltaY * zoomSensitivity;
-        const newZoom = Math.max(0.1, Math.min(5, zoom + delta));
+        const newZoom = Math.max(0.1, Math.min(10, zoom * (1 + delta)));
         
         if (newZoom !== zoom) {
-          // Calculate mouse position relative to the scroll container
-          const rect = canvas.getBoundingClientRect();
+          const rect = container.getBoundingClientRect();
           const mouseX = e.clientX - rect.left;
           const mouseY = e.clientY - rect.top;
 
-          // Calculate the current scroll position relative to the mouse
-          const scrollX = canvas.scrollLeft + mouseX;
-          const scrollY = canvas.scrollTop + mouseY;
-
-          // Calculate the new scroll position based on the zoom ratio
-          const zoomRatio = newZoom / zoom;
-          const newScrollX = scrollX * zoomRatio - mouseX;
-          const newScrollY = scrollY * zoomRatio - mouseY;
+          const svgX = (mouseX - pan.x) / zoom;
+          const svgY = (mouseY - pan.y) / zoom;
+          
+          const newPanX = mouseX - (svgX * newZoom);
+          const newPanY = mouseY - (svgY * newZoom);
 
           setZoom(newZoom);
-          
-          // Use requestAnimationFrame to ensure the scroll happens after the render
-          requestAnimationFrame(() => {
-            if (canvasRef.current) {
-              canvasRef.current.scrollLeft = newScrollX;
-              canvasRef.current.scrollTop = newScrollY;
-            }
-          });
+          setPan({ x: newPanX, y: newPanY });
         }
+      } else {
+        // Pan with trackpad
+        setPan({
+          x: pan.x - e.deltaX,
+          y: pan.y - e.deltaY
+        });
       }
     };
 
-    canvas.addEventListener('wheel', handleWheel, { passive: false });
-    return () => canvas.removeEventListener('wheel', handleWheel);
-  }, [zoom, setZoom]);
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [zoom, pan, setZoom, setPan]);
 
-  const getSvgPoint = (e: React.PointerEvent) => {
-    if (!svgRef.current) return { x: 0, y: 0 };
+  const getSvgPoint = (clientX: number, clientY: number) => {
+    if (!gRef.current || !svgRef.current) return { x: 0, y: 0 };
     const svg = svgRef.current;
     const pt = svg.createSVGPoint();
-    pt.x = e.clientX;
-    pt.y = e.clientY;
-    const ctm = svg.getScreenCTM();
+    pt.x = clientX;
+    pt.y = clientY;
+    const ctm = gRef.current.getScreenCTM();
     if (!ctm) return { x: 0, y: 0 };
     return pt.matrixTransform(ctm.inverse());
   };
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (e.button === 1 || e.button === 2 || (e.button === 0 && e.altKey)) { // Middle click, right click, or Alt+Left click to pan
+    if (e.button === 1 || e.button === 2 || (e.button === 0 && e.altKey) || (e.button === 0 && e.shiftKey && e.ctrlKey)) { 
       e.preventDefault();
       setIsPanning(true);
       setSelectedKecamatan(null);
-    } else if (e.target === e.currentTarget || (e.target as Element).tagName === 'svg' || (e.target as Element).tagName === 'rect') {
-      // Start selection box
+    } else if (e.target === e.currentTarget || (e.target as Element).tagName === 'svg' || ((e.target as Element).tagName === 'rect' && (e.target as Element).id === 'bg-rect')) {
       if (!e.shiftKey) {
         setSelectedKecamatan(null);
       }
-      const pt = getSvgPoint(e);
+      const pt = getSvgPoint(e.clientX, e.clientY);
       setSelectionBox({ startX: pt.x, startY: pt.y, currentX: pt.x, currentY: pt.y });
     }
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (isPanning && canvasRef.current) {
-      canvasRef.current.scrollLeft -= e.movementX;
-      canvasRef.current.scrollTop -= e.movementY;
+    if (isPanning) {
+      setPan({
+        x: pan.x + e.movementX,
+        y: pan.y + e.movementY
+      });
     } else if (selectionBox) {
-      const pt = getSvgPoint(e);
+      const pt = getSvgPoint(e.clientX, e.clientY);
       setSelectionBox({ ...selectionBox, currentX: pt.x, currentY: pt.y });
     }
   };
@@ -114,17 +107,16 @@ export const MapCanvas = () => {
     setIsPanning(false);
     
     if (selectionBox) {
-      // Calculate selected items
       const minX = Math.min(selectionBox.startX, selectionBox.currentX);
       const maxX = Math.max(selectionBox.startX, selectionBox.currentX);
       const minY = Math.min(selectionBox.startY, selectionBox.currentY);
       const maxY = Math.max(selectionBox.startY, selectionBox.currentY);
 
-      // Only select if the box is large enough (not just a click)
       if (maxX - minX > 5 || maxY - minY > 5) {
         const svg = svgRef.current;
-        if (svg) {
-          const ctm = svg.getScreenCTM();
+        const g = gRef.current;
+        if (svg && g) {
+          const ctm = g.getScreenCTM();
           if (ctm) {
             const inverseCtm = ctm.inverse();
             const newlySelectedIds: string[] = [];
@@ -142,7 +134,6 @@ export const MapCanvas = () => {
               const elMinY = Math.min(svgPt1.y, svgPt2.y);
               const elMaxY = Math.max(svgPt1.y, svgPt2.y);
               
-              // Check intersection with selection box
               if (elMinX < maxX && elMaxX > minX && elMinY < maxY && elMaxY > minY) {
                 const id = el.getAttribute('data-id');
                 if (id) newlySelectedIds.push(id);
@@ -165,33 +156,26 @@ export const MapCanvas = () => {
 
   return (
     <div 
-      ref={canvasRef}
-      className={`relative w-full h-full bg-slate-100 overflow-auto border border-slate-200 rounded-xl shadow-inner ${isPanning ? 'cursor-grabbing' : selectionBox ? 'cursor-crosshair' : 'cursor-default'}`}
+      ref={containerRef}
+      className={`relative w-full h-full bg-slate-100 overflow-hidden border border-slate-200 rounded-xl shadow-inner ${isPanning ? 'cursor-grabbing' : selectionBox ? 'cursor-crosshair' : 'cursor-default'}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <div 
-        className="min-w-max min-h-max p-20 flex items-center justify-center"
-        style={{ width: `${2000 * zoom}px`, height: `${2000 * zoom}px` }}
+      <svg
+        ref={svgRef}
+        className="w-full h-full"
       >
-        <svg
-          ref={svgRef}
-          className="bg-white shadow-md"
-          width={2000 * zoom}
-          height={2000 * zoom}
-          viewBox="0 0 1000 1000"
-        >
-          <defs>
-            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth="1"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#grid)" />
-          
-          {/* Scale everything inside the SVG to match the 2000x2000 viewBox if needed, but since viewBox is 2000x2000, it scales automatically */}
+        <defs>
+          <pattern id="grid" width={50 * zoom} height={50 * zoom} patternUnits="userSpaceOnUse" patternTransform={`translate(${pan.x % (50 * zoom)}, ${pan.y % (50 * zoom)})`}>
+            <path d={`M ${50 * zoom} 0 L 0 0 0 ${50 * zoom}`} fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth="1"/>
+          </pattern>
+        </defs>
+        <rect id="bg-rect" width="100%" height="100%" fill="url(#grid)" />
+        
+        <g ref={gRef} transform={`translate(${pan.x}, ${pan.y}) scale(${zoom})`}>
           {visibleKecamatans.map((kecamatan) => (
             <MapKecamatan key={kecamatan.id} kecamatan={kecamatan} />
           ))}
@@ -204,13 +188,13 @@ export const MapCanvas = () => {
               height={Math.abs(selectionBox.currentY - selectionBox.startY)}
               fill="rgba(249, 115, 22, 0.1)"
               stroke="#f97316"
-              strokeWidth={1}
-              strokeDasharray="4 4"
+              strokeWidth={1 / zoom}
+              strokeDasharray={`${4 / zoom} ${4 / zoom}`}
               pointerEvents="none"
             />
           )}
-        </svg>
-      </div>
+        </g>
+      </svg>
     </div>
   );
 };
