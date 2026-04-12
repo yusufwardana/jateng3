@@ -1,8 +1,8 @@
 import { useMapStore } from '../store';
 import { useStore } from 'zustand';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Separator } from '@/components/ui/separator';
+import { Button } from './ui/button.tsx';
+import { Slider } from './ui/slider.tsx';
+import { Separator } from './ui/separator.tsx';
 import { 
   Plus, 
   Minus, 
