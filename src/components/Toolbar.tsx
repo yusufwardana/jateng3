@@ -144,10 +144,10 @@ export const Toolbar = () => {
     <div className="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between shadow-sm z-10">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2 mr-6">
-          <div className="p-2 bg-blue-600 rounded-lg text-white">
+          <div className="p-2 bg-purple-800 rounded-lg text-white">
             <MapIcon size={20} />
           </div>
-          <h1 className="font-bold text-xl tracking-tight text-slate-900">Jateng 3</h1>
+          <h1 className="font-bold text-xl tracking-tight text-purple-900">Jateng 3</h1>
         </div>
 
         <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
@@ -270,13 +270,13 @@ export const Toolbar = () => {
 
         <div {...getRootProps()}>
           <input {...getInputProps()} />
-          <Button variant="outline" className={cn("gap-2", isDragActive && "border-blue-500 bg-blue-50")}>
+          <Button variant="outline" className={cn("gap-2", isDragActive && "border-orange-500 bg-orange-50")}>
             <Upload size={16} />
             Upload SVG
           </Button>
         </div>
         
-        <Button variant="default" className="gap-2 bg-blue-600 hover:bg-blue-700" onClick={exportMap}>
+        <Button variant="default" className="gap-2 bg-orange-500 hover:bg-orange-600 text-white" onClick={exportMap}>
           <Download size={16} />
           Export JSON
         </Button>
@@ -286,7 +286,7 @@ export const Toolbar = () => {
         <div className="flex items-center gap-3">
           <div className={cn(
             "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium border",
-            user ? "bg-green-50 text-green-700 border-green-200" : "bg-blue-50 text-blue-700 border-blue-200"
+            user ? "bg-green-50 text-green-700 border-green-200" : "bg-purple-50 text-purple-700 border-purple-200"
           )}>
             <Database size={12} />
             {user ? 'Supabase Cloud' : 'Browser Local'}

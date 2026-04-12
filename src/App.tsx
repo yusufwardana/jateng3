@@ -56,7 +56,7 @@ export default function App() {
       {isLoading && (
         <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] z-[100] flex items-center justify-center">
           <div className="bg-white p-4 rounded-xl shadow-2xl border border-slate-200 flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
             <span className="text-sm font-medium text-slate-600">Syncing with Cloud...</span>
           </div>
         </div>

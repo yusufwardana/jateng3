@@ -15,7 +15,9 @@ import {
   MapPin,
   FolderTree,
   Lock,
-  Unlock
+  Unlock,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -36,6 +38,7 @@ export const Sidebar = () => {
     updateKecamatan,
     updateArea,
     updateCluster,
+    updateRegion,
     deleteKecamatan,
     deleteArea,
     deleteCluster,
@@ -52,14 +55,18 @@ export const Sidebar = () => {
     <div className="w-80 h-full border-l border-slate-200 bg-white flex flex-col">
       <Tabs defaultValue="hierarchy" className="flex-1 flex flex-col">
         <div className="px-4 pt-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="hierarchy" className="flex items-center gap-2">
-              <FolderTree size={14} />
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="hierarchy" className="flex items-center gap-1 text-xs">
+              <FolderTree size={12} />
               Hierarchy
             </TabsTrigger>
-            <TabsTrigger value="properties" className="flex items-center gap-2">
-              <Settings2 size={14} />
-              Properties
+            <TabsTrigger value="layers" className="flex items-center gap-1 text-xs">
+              <Layers size={12} />
+              Layers
+            </TabsTrigger>
+            <TabsTrigger value="properties" className="flex items-center gap-1 text-xs">
+              <Settings2 size={12} />
+              Props
             </TabsTrigger>
           </TabsList>
         </div>
@@ -82,7 +89,7 @@ export const Sidebar = () => {
                         onClick={() => addCluster({
                           id: Math.random().toString(36).substr(2, 9),
                           name: 'New Cluster',
-                          color: '#3b82f6',
+                          color: '#f97316',
                           regionId: region.id
                         })}
                       >
@@ -97,7 +104,7 @@ export const Sidebar = () => {
                         <div 
                           className={cn(
                             "flex items-center justify-between p-1.5 rounded-md cursor-pointer group transition-colors",
-                            selectedClusterId === cluster.id ? "bg-blue-50 text-blue-700" : "hover:bg-slate-50"
+                            selectedClusterId === cluster.id ? "bg-purple-50 text-purple-800" : "hover:bg-slate-50"
                           )}
                           onClick={() => setSelectedCluster(cluster.id)}
                         >
@@ -110,7 +117,7 @@ export const Sidebar = () => {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-5 w-5 text-slate-400 hover:text-blue-500"
+                                className="h-5 w-5 text-slate-400 hover:text-orange-500"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   addArea({
@@ -203,6 +210,145 @@ export const Sidebar = () => {
                                     )}
                                   </div>
                                 ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="layers" className="flex-1 overflow-hidden mt-0">
+          <ScrollArea className="h-full p-4">
+            <div className="flex justify-end mb-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs h-7"
+                onClick={() => {
+                  regions.forEach(r => updateRegion(r.id, { isVisible: true }));
+                  clusters.forEach(c => updateCluster(c.id, { isVisible: true }));
+                  areas.forEach(a => updateArea(a.id, { isVisible: true }));
+                }}
+              >
+                Show All
+              </Button>
+            </div>
+            <div className="space-y-6">
+              {regions.map(region => (
+                <div key={region.id} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div 
+                      className={cn(
+                        "flex items-center gap-2 font-semibold cursor-pointer",
+                        selectedRegionId === region.id ? "text-purple-800" : "text-slate-900"
+                      )}
+                      onClick={() => setSelectedRegion(region.id)}
+                    >
+                      <ChevronRight size={16} className="text-slate-400" />
+                      {region.name}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {selectedRegionId === region.id && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 text-[10px] px-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50" 
+                          onClick={() => {
+                            regions.forEach(r => updateRegion(r.id, { isVisible: r.id === region.id }));
+                          }}
+                        >
+                          Show Only
+                        </Button>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6" 
+                        onClick={() => updateRegion(region.id, { isVisible: region.isVisible === false ? true : false })}
+                      >
+                        {region.isVisible === false ? <EyeOff size={14} className="text-slate-400" /> : <Eye size={14} className="text-slate-600" />}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="pl-4 space-y-2 border-l border-slate-100 ml-2">
+                    {clusters.filter(c => c.regionId === region.id).map(cluster => (
+                      <div key={cluster.id} className="space-y-1">
+                        <div className="flex items-center justify-between p-1.5 rounded-md">
+                          <div 
+                            className={cn(
+                              "flex items-center gap-2 text-sm font-medium cursor-pointer",
+                              selectedClusterId === cluster.id ? "text-purple-800" : "text-slate-700"
+                            )}
+                            onClick={() => setSelectedCluster(cluster.id)}
+                          >
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cluster.color }} />
+                            {cluster.name}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {selectedClusterId === cluster.id && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 text-[10px] px-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50" 
+                                onClick={() => {
+                                  clusters.forEach(c => updateCluster(c.id, { isVisible: c.id === cluster.id }));
+                                }}
+                              >
+                                Show Only
+                              </Button>
+                            )}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-6 w-6" 
+                              onClick={() => updateCluster(cluster.id, { isVisible: cluster.isVisible === false ? true : false })}
+                            >
+                              {cluster.isVisible === false ? <EyeOff size={14} className="text-slate-400" /> : <Eye size={14} className="text-slate-600" />}
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="pl-4 space-y-1 border-l border-slate-50 ml-1">
+                          {areas.filter(a => a.clusterId === cluster.id).map(area => (
+                            <div key={area.id} className="flex items-center justify-between p-1.5 rounded-md text-xs">
+                              <div 
+                                className={cn(
+                                  "flex items-center gap-2 cursor-pointer",
+                                  selectedAreaId === area.id ? "text-purple-800 font-medium" : "text-slate-600"
+                                )}
+                                onClick={() => setSelectedArea(area.id)}
+                              >
+                                <Layers size={12} className={selectedAreaId === area.id ? "text-purple-800" : "text-slate-400"} />
+                                {area.name}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                {selectedAreaId === area.id && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-6 text-[10px] px-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50" 
+                                    onClick={() => {
+                                      areas.forEach(a => updateArea(a.id, { isVisible: a.id === area.id }));
+                                    }}
+                                  >
+                                    Show Only
+                                  </Button>
+                                )}
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-6 w-6" 
+                                  onClick={() => updateArea(area.id, { isVisible: area.isVisible === false ? true : false })}
+                                >
+                                  {area.isVisible === false ? <EyeOff size={14} className="text-slate-400" /> : <Eye size={14} className="text-slate-600" />}
+                                </Button>
                               </div>
                             </div>
                           ))}

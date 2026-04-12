@@ -9,7 +9,7 @@ interface MapKecamatanProps {
 }
 
 export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
-  const { selectedKecamatanId, setSelectedKecamatan, updateKecamatan, isAllLocked, user } = useMapStore();
+  const { selectedKecamatanId, setSelectedKecamatan, updateKecamatan, isAllLocked, user, zoom } = useMapStore();
   const [isDragging, setIsDragging] = useState(false);
   const [bbox, setBbox] = useState<DOMRect | null>(null);
   const pathRef = useRef<SVGPathElement>(null);
@@ -23,6 +23,25 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
     }
   }, [kecamatan.path]);
 
+  useEffect(() => {
+    const element = pathRef.current;
+    if (!element) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (!isLocked && isSelected) {
+        e.preventDefault();
+        e.stopPropagation();
+        const zoomSensitivity = 0.001;
+        const delta = -e.deltaY * zoomSensitivity;
+        const newScale = Math.max(0.1, Math.min(3, (kecamatan.scale || 1) + delta));
+        updateKecamatan(kecamatan.id, { scale: newScale });
+      }
+    };
+
+    element.addEventListener('wheel', handleWheel, { passive: false });
+    return () => element.removeEventListener('wheel', handleWheel);
+  }, [isLocked, isSelected, kecamatan.scale, kecamatan.id, updateKecamatan]);
+
   return (
     <motion.g
       drag={!isLocked}
@@ -30,18 +49,17 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
       onDragStart={() => setIsDragging(true)}
       onDragEnd={(_, info) => {
         setIsDragging(false);
-        const snap = 10;
-        const newX = Math.round((kecamatan.position.x + info.offset.x) / snap) * snap;
-        const newY = Math.round((kecamatan.position.y + info.offset.y) / snap) * snap;
+        // Adjust offset by zoom level so it doesn't fly away when zoomed in/out
+        const newX = kecamatan.position.x + (info.offset.x / zoom);
+        const newY = kecamatan.position.y + (info.offset.y / zoom);
         
         updateKecamatan(kecamatan.id, {
           position: { x: newX, y: newY }
         });
       }}
       whileDrag={{ 
-        scale: 1.02,
+        scale: (kecamatan.scale || 1) * 1.02,
         filter: 'drop-shadow(0px 10px 10px rgba(0,0,0,0.2))',
-        transition: { duration: 0.1 }
       }}
       initial={false}
       animate={{ 
@@ -50,29 +68,20 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
         scale: kecamatan.scale || 1,
         opacity: 1
       }}
-      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      style={{ 
+        originX: bbox ? `${bbox.x + bbox.width / 2}px` : '50%',
+        originY: bbox ? `${bbox.y + bbox.height / 2}px` : '50%'
+      }}
+      transition={{ type: 'tween', duration: 0.1 }}
       onClick={(e) => {
         e.stopPropagation();
         setSelectedKecamatan(kecamatan.id);
       }}
       className={cn(
-        "transition-all duration-200",
+        "transition-colors duration-200",
         isLocked ? "cursor-default" : "cursor-grab active:cursor-grabbing"
       )}
     >
-      {/* Ghost Image (Original Position) */}
-      {isDragging && (
-        <path
-          d={kecamatan.path}
-          fill="none"
-          stroke="#cbd5e1"
-          strokeWidth={1}
-          strokeDasharray="4 2"
-          className="pointer-events-none"
-          style={{ transform: `translate(${-kecamatan.position.x}px, ${-kecamatan.position.y}px)` }}
-        />
-      )}
-
       {/* Bounding Box */}
       {(isDragging || isSelected) && bbox && (
         <rect
@@ -81,7 +90,7 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
           width={bbox.width + 8}
           height={bbox.height + 8}
           fill="none"
-          stroke={isDragging ? "#3b82f6" : "#94a3b8"}
+          stroke={isDragging ? "#f97316" : "#94a3b8"}
           strokeWidth={isDragging ? 1.5 : 1}
           strokeDasharray={isDragging ? "4 2" : "none"}
           rx="4"

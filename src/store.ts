@@ -14,6 +14,7 @@ interface MapStore extends MapState {
   updateKecamatan: (id: string, updates: Partial<Kecamatan>) => void;
   updateArea: (id: string, updates: Partial<Area>) => void;
   updateCluster: (id: string, updates: Partial<Cluster>) => void;
+  updateRegion: (id: string, updates: Partial<Region>) => void;
   setSelectedKecamatan: (id: string | null) => void;
   setSelectedArea: (id: string | null) => void;
   setSelectedCluster: (id: string | null) => void;
@@ -69,6 +70,10 @@ export const useMapStore = create<MapStore>()(
 
       updateCluster: (id, updates) => set((state) => ({
         clusters: state.clusters.map((c) => (c.id === id ? { ...c, ...updates } : c))
+      })),
+
+      updateRegion: (id, updates) => set((state) => ({
+        regions: state.regions.map((r) => (r.id === id ? { ...r, ...updates } : r))
       })),
 
       setSelectedKecamatan: (id) => set({ selectedKecamatanId: id }),

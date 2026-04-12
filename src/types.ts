@@ -9,6 +9,7 @@ export interface Kecamatan {
   areaId: string;
   viewBox?: string;
   isLocked?: boolean;
+  isVisible?: boolean;
 }
 
 export interface Area {
@@ -16,6 +17,7 @@ export interface Area {
   name: string;
   color: string;
   clusterId: string;
+  isVisible?: boolean;
 }
 
 export interface Cluster {
@@ -23,11 +25,13 @@ export interface Cluster {
   name: string;
   color: string;
   regionId: string;
+  isVisible?: boolean;
 }
 
 export interface Region {
   id: string;
   name: string;
+  isVisible?: boolean;
 }
 
 export interface MapState {
