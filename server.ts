@@ -22,27 +22,33 @@ async function startServer() {
 
   // API: Load Data
   app.get("/api/map-data", async (req, res) => {
+    console.log("Checking storage configuration...");
+    console.log("- KV Configured:", isKvConfigured);
+    console.log("- Blob Configured:", isBlobConfigured);
+
     try {
       // 1. Try Vercel KV
       if (isKvConfigured) {
-        res.setHeader('x-storage-type', 'cloud');
         const data = await kv.get("map-data");
+        res.setHeader('x-storage-type', 'cloud');
         return res.json(data || { regions: [], clusters: [], areas: [], kecamatans: [] });
       }
 
       // 2. Try Vercel Blob
       if (isBlobConfigured) {
-        res.setHeader('x-storage-type', 'cloud');
         try {
-          const { blobs } = await import('@vercel/blob').then(m => m.list());
+          const { list } = await import('@vercel/blob');
+          const { blobs } = await list();
           const mapBlob = blobs.find(b => b.pathname === 'map-data.json');
           if (mapBlob) {
             const data = await fetch(mapBlob.url).then(r => r.json());
+            res.setHeader('x-storage-type', 'cloud');
             return res.json(data);
           }
         } catch (e) {
           console.error("Blob load error:", e);
         }
+        res.setHeader('x-storage-type', 'cloud'); // Still cloud mode, just empty
         return res.json({ regions: [], clusters: [], areas: [], kecamatans: [] });
       }
 
