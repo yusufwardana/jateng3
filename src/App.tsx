@@ -62,8 +62,8 @@ export default function App() {
         </div>
       )}
       <Toolbar />
-      <div className="flex flex-1 overflow-hidden">
-        <main className="flex-1 relative p-6">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+        <main className="flex-1 relative p-2 md:p-6 min-h-[50vh] md:min-h-0">
           <MapCanvas />
         </main>
         <Sidebar />
