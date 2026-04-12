@@ -41,7 +41,7 @@ export default function App() {
     };
   }, [loadFromSupabase, setUser]);
 
-  if (path === '/auth/callback') {
+  if (path.startsWith('/auth/callback')) {
     return <AuthCallback />;
   }
 

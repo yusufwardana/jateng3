@@ -51,8 +51,9 @@ export const Sidebar = () => {
     try {
       const url = await signInWithGoogle();
       window.open(url, 'google_auth', 'width=600,height=700');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      alert(error.message || 'An error occurred during login.');
     }
   };
 
