@@ -116,8 +116,8 @@ export const useMapStore = create<MapStore>()(
       })),
 
       saveData: async () => {
-        const { user, regions, clusters, areas, kecamatans } = get();
-        if (!user) return;
+        const { user, regions, clusters, areas, kecamatans, isLoading } = get();
+        if (!user || isLoading) return; // Don't save if loading or not logged in
 
         set({ isSaving: true });
         try {
@@ -139,18 +139,17 @@ export const useMapStore = create<MapStore>()(
       },
 
       loadData: async () => {
-        const { user } = get();
-        if (!user) return;
-
         set({ isLoading: true });
         try {
+          // Fetch the most recently updated map data (publicly accessible)
           const { data, error } = await supabase
             .from('map_data')
             .select('data')
-            .eq('id', user.id)
-            .single();
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
           
-          if (error && error.code !== 'PGRST116') throw error;
+          if (error) throw error;
           
           if (data?.data) {
             set({ 
@@ -164,7 +163,7 @@ export const useMapStore = create<MapStore>()(
         } catch (error) {
           console.error('Error loading data:', error);
         } finally {
-          set({ isLoading: false });
+          setTimeout(() => set({ isLoading: false }), 500);
         }
       }
     })

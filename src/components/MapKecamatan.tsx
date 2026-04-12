@@ -9,13 +9,13 @@ interface MapKecamatanProps {
 }
 
 export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
-  const { selectedKecamatanId, setSelectedKecamatan, updateKecamatan, isAllLocked } = useMapStore();
+  const { selectedKecamatanId, setSelectedKecamatan, updateKecamatan, isAllLocked, user } = useMapStore();
   const [isDragging, setIsDragging] = useState(false);
   const [bbox, setBbox] = useState<DOMRect | null>(null);
   const pathRef = useRef<SVGPathElement>(null);
   
   const isSelected = selectedKecamatanId === kecamatan.id;
-  const isLocked = isAllLocked || kecamatan.isLocked;
+  const isLocked = isAllLocked || kecamatan.isLocked || !user; // Lock if not logged in
 
   useEffect(() => {
     if (pathRef.current) {

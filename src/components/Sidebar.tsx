@@ -40,7 +40,8 @@ export const Sidebar = () => {
     deleteArea,
     deleteCluster,
     addCluster,
-    addArea
+    addArea,
+    user
   } = useMapStore();
 
   const selectedKecamatan = kecamatans.find(k => k.id === selectedKecamatanId);
@@ -73,19 +74,21 @@ export const Sidebar = () => {
                       <ChevronRight size={16} className="text-slate-400" />
                       {region.name}
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                      onClick={() => addCluster({
-                        id: Math.random().toString(36).substr(2, 9),
-                        name: 'New Cluster',
-                        color: '#3b82f6',
-                        regionId: region.id
-                      })}
-                    >
-                      <Plus size={14} />
-                    </Button>
+                    {user && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                        onClick={() => addCluster({
+                          id: Math.random().toString(36).substr(2, 9),
+                          name: 'New Cluster',
+                          color: '#3b82f6',
+                          regionId: region.id
+                        })}
+                      >
+                        <Plus size={14} />
+                      </Button>
+                    )}
                   </div>
                   
                   <div className="pl-4 space-y-2 border-l border-slate-100 ml-2">
@@ -102,35 +105,37 @@ export const Sidebar = () => {
                             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cluster.color }} />
                             {cluster.name}
                           </div>
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-5 w-5 text-slate-400 hover:text-blue-500"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                addArea({
-                                  id: Math.random().toString(36).substr(2, 9),
-                                  name: 'New Area',
-                                  color: cluster.color,
-                                  clusterId: cluster.id
-                                });
-                              }}
-                            >
-                              <Plus size={12} />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-5 w-5 text-slate-400 hover:text-red-500"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteCluster(cluster.id);
-                              }}
-                            >
-                              <Trash2 size={12} />
-                            </Button>
-                          </div>
+                          {user && (
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-5 w-5 text-slate-400 hover:text-blue-500"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  addArea({
+                                    id: Math.random().toString(36).substr(2, 9),
+                                    name: 'New Area',
+                                    color: cluster.color,
+                                    clusterId: cluster.id
+                                  });
+                                }}
+                              >
+                                <Plus size={12} />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-5 w-5 text-slate-400 hover:text-red-500"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteCluster(cluster.id);
+                                }}
+                              >
+                                <Trash2 size={12} />
+                              </Button>
+                            </div>
+                          )}
                         </div>
 
                         <div className="pl-4 space-y-1 border-l border-slate-50 ml-1">
@@ -150,17 +155,19 @@ export const Sidebar = () => {
                                   <Layers size={12} className="text-slate-400" />
                                   {area.name}
                                 </div>
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-4 w-4 opacity-0 group-hover:opacity-100 hover:text-red-500"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    deleteArea(area.id);
-                                  }}
-                                >
-                                  <Trash2 size={10} />
-                                </Button>
+                                {user && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-4 w-4 opacity-0 group-hover:opacity-100 hover:text-red-500"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteArea(area.id);
+                                    }}
+                                  >
+                                    <Trash2 size={10} />
+                                  </Button>
+                                )}
                               </div>
 
                               <div className="pl-4 space-y-1">
@@ -181,17 +188,19 @@ export const Sidebar = () => {
                                       <MapPin size={10} />
                                       {kecamatan.name}
                                     </div>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      className="h-3 w-3 opacity-0 group-hover:opacity-100 hover:text-red-500"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        deleteKecamatan(kecamatan.id);
-                                      }}
-                                    >
-                                      <Trash2 size={8} />
-                                    </Button>
+                                    {user && (
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-3 w-3 opacity-0 group-hover:opacity-100 hover:text-red-500"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          deleteKecamatan(kecamatan.id);
+                                        }}
+                                      >
+                                        <Trash2 size={8} />
+                                      </Button>
+                                    )}
                                   </div>
                                 ))}
                               </div>
@@ -209,7 +218,12 @@ export const Sidebar = () => {
 
         <TabsContent value="properties" className="flex-1 overflow-hidden mt-0">
           <ScrollArea className="h-full p-4">
-            {!selectedKecamatan && !selectedArea && !selectedCluster ? (
+            {!user ? (
+              <div className="h-full flex flex-col items-center justify-center text-slate-400 text-sm italic text-center px-4">
+                <Lock size={32} className="mb-4 opacity-20" />
+                Login as Admin to edit properties
+              </div>
+            ) : !selectedKecamatan && !selectedArea && !selectedCluster ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 text-sm italic">
                 Select an item to edit properties
               </div>
