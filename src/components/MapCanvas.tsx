@@ -33,33 +33,11 @@ export const MapCanvas = () => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       
-      if (e.ctrlKey || !e.shiftKey) {
-        // Zoom
-        const zoomSensitivity = 0.002;
-        const delta = -e.deltaY * zoomSensitivity;
-        const newZoom = Math.max(0.1, Math.min(10, zoom * (1 + delta)));
-        
-        if (newZoom !== zoom) {
-          const rect = container.getBoundingClientRect();
-          const mouseX = e.clientX - rect.left;
-          const mouseY = e.clientY - rect.top;
-
-          const svgX = (mouseX - pan.x) / zoom;
-          const svgY = (mouseY - pan.y) / zoom;
-          
-          const newPanX = mouseX - (svgX * newZoom);
-          const newPanY = mouseY - (svgY * newZoom);
-
-          setZoom(newZoom);
-          setPan({ x: newPanX, y: newPanY });
-        }
-      } else {
-        // Pan with trackpad
-        setPan({
-          x: pan.x - e.deltaX,
-          y: pan.y - e.deltaY
-        });
-      }
+      // Only Pan, no zoom from scroll
+      setPan({
+        x: pan.x - e.deltaX,
+        y: pan.y - e.deltaY
+      });
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false });
