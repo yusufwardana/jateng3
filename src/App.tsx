@@ -19,18 +19,32 @@ export default function App() {
   useEffect(() => {
     // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('📋 Initial session check:', session?.user?.id || 'No user');
       setUser(session?.user ?? null);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('🔄 Auth state changed:', _event, session?.user?.id || 'No user');
       setUser(session?.user ?? null);
     });
 
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'OAUTH_AUTH_SUCCESS') {
-        // Refresh data or update state after successful login
-        loadFromSupabase();
+        console.log('📨 Received OAuth success message from popup');
+        
+        // Wait a moment for user state to sync
+        setTimeout(async () => {
+          const { data: { user } } = await supabase.auth.getUser();
+          console.log('👤 User after OAuth callback:', user?.id || 'No user');
+          
+          if (user) {
+            console.log('✅ User authenticated, loading data from Supabase');
+            loadFromSupabase();
+          } else {
+            console.warn('⚠️ OAuth callback received but user not authenticated');
+          }
+        }, 500);
       }
     };
 
