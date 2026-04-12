@@ -1,5 +1,5 @@
 {
-  "name": "Jateng 3 \"Dashboard Mapping V1\"",
+  "name": "Dashboard Mapping Wilayah Jateng 3",
   "description": "Mapping tool for JATENG 3 region with Supabase persistence and Vercel-ready deployment.",
   "requestFramePermissions": []
 }

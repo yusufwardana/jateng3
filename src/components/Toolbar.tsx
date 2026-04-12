@@ -149,7 +149,7 @@ export const Toolbar = () => {
           <div className="p-2 bg-purple-800 rounded-lg text-white">
             <MapIcon size={20} />
           </div>
-          <h1 className="font-bold text-xl tracking-tight text-purple-900">Jateng 3</h1>
+          <h1 className="font-bold text-xl tracking-tight text-purple-900">Dashboard Mapping Wilayah Jateng 3</h1>
         </div>
 
         <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
