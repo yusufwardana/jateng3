@@ -15,13 +15,12 @@ import {
   Trash2,
   CloudUpload,
   CloudDownload,
-  LogIn,
-  LogOut
+  Lock,
+  Unlock
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { parseSVG } from '../lib/svg-parser';
 import { cn } from '../lib/utils';
-import { supabase } from '../lib/supabase';
 import { useEffect, useState } from 'react';
 
 export const Toolbar = () => {
@@ -36,26 +35,14 @@ export const Toolbar = () => {
     regions,
     deleteKecamatan,
     setPan,
-    saveToSupabase,
-    loadFromSupabase,
+    saveData,
+    loadData,
     isSaving,
     isLoading,
-    user,
-    signOut
+    isAllLocked,
+    setAllLocked,
+    lastSaved
   } = useMapStore();
-
-  const handleLogin = async () => {
-    try {
-      const { signInWithGoogle } = await import('../lib/supabase');
-      const url = await signInWithGoogle();
-      window.open(url, 'google_auth', 'width=600,height=700');
-    } catch (error: any) {
-      console.error('Login error:', error);
-      alert(error.message || 'An error occurred during login.');
-    }
-  };
-
-  const handleLogout = () => signOut();
 
   const { undo, redo, pastStates, futureStates } = useStore(useMapStore.temporal, (state) => state);
 
@@ -167,6 +154,17 @@ export const Toolbar = () => {
           <Trash2 size={16} className="mr-2" />
           Clear All
         </Button>
+
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className={cn("gap-2", isAllLocked ? "text-amber-600 hover:bg-amber-50" : "text-slate-600")}
+          onClick={() => setAllLocked(!isAllLocked)}
+        >
+          {isAllLocked ? <Lock size={16} /> : <Unlock size={16} />}
+          {isAllLocked ? 'Locked' : 'Unlocked'}
+        </Button>
+
         <div {...getRootProps()}>
           <input {...getInputProps()} />
           <Button variant="outline" className={cn("gap-2", isDragActive && "border-blue-500 bg-blue-50")}>
@@ -182,38 +180,33 @@ export const Toolbar = () => {
 
         <Separator orientation="vertical" className="h-8 mx-2" />
 
-        {user ? (
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-2" 
-              onClick={saveToSupabase}
-              disabled={isSaving}
-            >
-              <CloudUpload size={16} className={cn(isSaving && "animate-pulse")} />
-              {isSaving ? 'Saving...' : 'Save Cloud'}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-2" 
-              onClick={loadFromSupabase}
-              disabled={isLoading}
-            >
-              <CloudDownload size={16} className={cn(isLoading && "animate-pulse")} />
-              {isLoading ? 'Loading...' : 'Load Cloud'}
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400" onClick={handleLogout} title="Logout">
-              <LogOut size={16} />
-            </Button>
-          </div>
-        ) : (
-          <Button variant="outline" size="sm" className="gap-2" onClick={handleLogin}>
-            <LogIn size={16} />
-            Login to Save
+        <div className="flex items-center gap-2">
+          {lastSaved && (
+            <span className="text-[10px] text-slate-400 mr-2 italic">
+              Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2" 
+            onClick={saveData}
+            disabled={isSaving}
+          >
+            <CloudUpload size={16} className={cn(isSaving && "animate-pulse")} />
+            {isSaving ? 'Saving...' : 'Save Local'}
           </Button>
-        )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2" 
+            onClick={loadData}
+            disabled={isLoading}
+          >
+            <CloudDownload size={16} className={cn(isLoading && "animate-pulse")} />
+            {isLoading ? 'Loading...' : 'Load Local'}
+          </Button>
+        </div>
       </div>
     </div>
   );

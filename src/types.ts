@@ -8,6 +8,7 @@ export interface Kecamatan {
   scale: number;
   areaId: string;
   viewBox?: string;
+  isLocked?: boolean;
 }
 
 export interface Area {
@@ -38,6 +39,7 @@ export interface MapState {
   selectedAreaId: string | null;
   selectedClusterId: string | null;
   selectedRegionId: string | null;
+  isAllLocked: boolean;
   zoom: number;
   pan: { x: number; y: number };
 }

@@ -2,18 +2,20 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Kecamatan } from '../types';
 import { useMapStore } from '../store';
+import { cn } from '../lib/utils';
 
 interface MapKecamatanProps {
   kecamatan: Kecamatan;
 }
 
 export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
-  const { selectedKecamatanId, setSelectedKecamatan, updateKecamatan } = useMapStore();
+  const { selectedKecamatanId, setSelectedKecamatan, updateKecamatan, isAllLocked } = useMapStore();
   const [isDragging, setIsDragging] = useState(false);
   const [bbox, setBbox] = useState<DOMRect | null>(null);
   const pathRef = useRef<SVGPathElement>(null);
   
   const isSelected = selectedKecamatanId === kecamatan.id;
+  const isLocked = isAllLocked || kecamatan.isLocked;
 
   useEffect(() => {
     if (pathRef.current) {
@@ -23,7 +25,7 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
 
   return (
     <motion.g
-      drag
+      drag={!isLocked}
       dragMomentum={false}
       onDragStart={() => setIsDragging(true)}
       onDragEnd={(_, info) => {
@@ -53,7 +55,10 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
         e.stopPropagation();
         setSelectedKecamatan(kecamatan.id);
       }}
-      className="cursor-grab active:cursor-grabbing"
+      className={cn(
+        "transition-all duration-200",
+        isLocked ? "cursor-default" : "cursor-grab active:cursor-grabbing"
+      )}
     >
       {/* Ghost Image (Original Position) */}
       {isDragging && (

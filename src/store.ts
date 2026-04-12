@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { temporal } from 'zundo';
 import { MapState, Region, Cluster, Area, Kecamatan } from './types';
-import { supabase } from './lib/supabase';
 
 interface MapStore extends MapState {
   addRegion: (region: Region) => void;
@@ -15,6 +14,7 @@ interface MapStore extends MapState {
   setSelectedArea: (id: string | null) => void;
   setSelectedCluster: (id: string | null) => void;
   setSelectedRegion: (id: string | null) => void;
+  setAllLocked: (locked: boolean) => void;
   setZoom: (zoom: number) => void;
   setPan: (pan: { x: number; y: number }) => void;
   deleteKecamatan: (id: string) => void;
@@ -22,14 +22,12 @@ interface MapStore extends MapState {
   deleteCluster: (id: string) => void;
   deleteRegion: (id: string) => void;
   
-  // Supabase Actions
-  saveToSupabase: () => Promise<void>;
-  loadFromSupabase: () => Promise<void>;
-  setUser: (user: any) => void;
-  signOut: () => Promise<void>;
+  // Persistence Actions
+  saveData: () => Promise<void>;
+  loadData: () => Promise<void>;
   isSaving: boolean;
   isLoading: boolean;
-  user: any;
+  lastSaved: Date | null;
 }
 
 export const useMapStore = create<MapStore>()(
@@ -43,11 +41,12 @@ export const useMapStore = create<MapStore>()(
       selectedAreaId: 'default-area',
       selectedClusterId: 'default-cluster',
       selectedRegionId: 'jateng-3',
+      isAllLocked: false,
       zoom: 1,
       pan: { x: 0, y: 0 },
       isSaving: false,
       isLoading: false,
-      user: null,
+      lastSaved: null,
 
       addRegion: (region) => set((state) => ({ regions: [...state.regions, region] })),
       addCluster: (cluster) => set((state) => ({ clusters: [...state.clusters, cluster] })),
@@ -70,6 +69,7 @@ export const useMapStore = create<MapStore>()(
       setSelectedArea: (id) => set({ selectedAreaId: id }),
       setSelectedCluster: (id) => set({ selectedClusterId: id }),
       setSelectedRegion: (id) => set({ selectedRegionId: id }),
+      setAllLocked: (locked) => set({ isAllLocked: locked }),
       setZoom: (zoom) => set({ zoom }),
       setPan: (pan) => set({ pan }),
 
@@ -109,66 +109,50 @@ export const useMapStore = create<MapStore>()(
         selectedRegionId: state.selectedRegionId === id ? null : state.selectedRegionId
       })),
 
-      saveToSupabase: async () => {
+      saveData: async () => {
         set({ isSaving: true });
         try {
           const { regions, clusters, areas, kecamatans } = get();
-          const { data: { user } } = await supabase.auth.getUser();
+          const response = await fetch("/api/map-data", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ regions, clusters, areas, kecamatans }),
+          });
           
-          if (!user) throw new Error('User not authenticated');
-
-          const { error } = await supabase
-            .from('map_data')
-            .upsert({ 
-              id: 'current-map', // Or use a dynamic ID
-              user_id: user.id,
-              data: { regions, clusters, areas, kecamatans },
-              updated_at: new Date().toISOString()
-            });
-
-          if (error) throw error;
+          if (!response.ok) throw new Error('Failed to save data');
+          set({ lastSaved: new Date() });
         } catch (error) {
-          console.error('Error saving to Supabase:', error);
+          console.error('Error saving data:', error);
         } finally {
           set({ isSaving: false });
         }
       },
 
-      loadFromSupabase: async () => {
+      loadData: async () => {
         set({ isLoading: true });
         try {
-          const { data, error } = await supabase
-            .from('map_data')
-            .select('data')
-            .eq('id', 'current-map')
-            .single();
-
-          if (error) throw error;
-          if (data?.data) {
+          const response = await fetch("/api/map-data");
+          if (!response.ok) throw new Error('Failed to load data');
+          const data = await response.json();
+          
+          if (data) {
             set({ 
-              regions: data.data.regions,
-              clusters: data.data.clusters,
-              areas: data.data.areas,
-              kecamatans: data.data.kecamatans
+              regions: data.regions || [],
+              clusters: data.clusters || [],
+              areas: data.areas || [],
+              kecamatans: data.kecamatans || []
             });
           }
         } catch (error) {
-          console.error('Error loading from Supabase:', error);
+          console.error('Error loading data:', error);
         } finally {
           set({ isLoading: false });
         }
-      },
-
-      setUser: (user) => set({ user }),
-
-      signOut: async () => {
-        await supabase.auth.signOut();
-        set({ user: null });
       }
     }),
     {
       partialize: (state) => {
-        const { zoom, pan, selectedKecamatanId, selectedAreaId, selectedClusterId, selectedRegionId, isSaving, isLoading, user, ...rest } = state;
+        const { zoom, pan, selectedKecamatanId, selectedAreaId, selectedClusterId, selectedRegionId, isSaving, isLoading, isAllLocked, lastSaved, ...rest } = state;
         return rest;
       },
     }
