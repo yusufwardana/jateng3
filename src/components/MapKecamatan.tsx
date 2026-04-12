@@ -69,15 +69,15 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
       onDragStart={() => setIsDragging(true)}
       onDrag={(_, info) => {
         if (selectedKecamatanIds.includes(kecamatan.id) && selectedKecamatanIds.length > 1) {
-          const dx = info.delta.x / zoom;
-          const dy = info.delta.y / zoom;
+          const dx = info.delta.x / (2 * zoom);
+          const dy = info.delta.y / (2 * zoom);
           moveSelectedKecamatansExcept(kecamatan.id, dx, dy);
         }
       }}
       onDragEnd={(_, info) => {
         setIsDragging(false);
-        const dx = info.offset.x / zoom;
-        const dy = info.offset.y / zoom;
+        const dx = info.offset.x / (2 * zoom);
+        const dy = info.offset.y / (2 * zoom);
         
         updateKecamatan(kecamatan.id, {
           position: { 

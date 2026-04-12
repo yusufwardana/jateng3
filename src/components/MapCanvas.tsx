@@ -24,6 +24,15 @@ export const MapCanvas = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Center the canvas initially
+    canvas.scrollLeft = (canvas.scrollWidth - canvas.clientWidth) / 2;
+    canvas.scrollTop = (canvas.scrollHeight - canvas.clientHeight) / 2;
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       
@@ -32,7 +41,32 @@ export const MapCanvas = () => {
         const zoomSensitivity = 0.001;
         const delta = -e.deltaY * zoomSensitivity;
         const newZoom = Math.max(0.1, Math.min(5, zoom + delta));
-        setZoom(newZoom);
+        
+        if (newZoom !== zoom) {
+          // Calculate mouse position relative to the scroll container
+          const rect = canvas.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+
+          // Calculate the current scroll position relative to the mouse
+          const scrollX = canvas.scrollLeft + mouseX;
+          const scrollY = canvas.scrollTop + mouseY;
+
+          // Calculate the new scroll position based on the zoom ratio
+          const zoomRatio = newZoom / zoom;
+          const newScrollX = scrollX * zoomRatio - mouseX;
+          const newScrollY = scrollY * zoomRatio - mouseY;
+
+          setZoom(newZoom);
+          
+          // Use requestAnimationFrame to ensure the scroll happens after the render
+          requestAnimationFrame(() => {
+            if (canvasRef.current) {
+              canvasRef.current.scrollLeft = newScrollX;
+              canvasRef.current.scrollTop = newScrollY;
+            }
+          });
+        }
       }
     };
 
@@ -67,11 +101,9 @@ export const MapCanvas = () => {
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (isPanning) {
-      setPan({
-        x: pan.x + e.movementX / zoom,
-        y: pan.y + e.movementY / zoom
-      });
+    if (isPanning && canvasRef.current) {
+      canvasRef.current.scrollLeft -= e.movementX;
+      canvasRef.current.scrollTop -= e.movementY;
     } else if (selectionBox) {
       const pt = getSvgPoint(e);
       setSelectionBox({ ...selectionBox, currentX: pt.x, currentY: pt.y });
@@ -134,47 +166,51 @@ export const MapCanvas = () => {
   return (
     <div 
       ref={canvasRef}
-      className={`relative w-full h-full bg-slate-50 overflow-auto border border-slate-200 rounded-xl shadow-inner ${isPanning ? 'cursor-grabbing' : selectionBox ? 'cursor-crosshair' : 'cursor-default'}`}
+      className={`relative w-full h-full bg-slate-100 overflow-auto border border-slate-200 rounded-xl shadow-inner ${isPanning ? 'cursor-grabbing' : selectionBox ? 'cursor-crosshair' : 'cursor-default'}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <svg
-        ref={svgRef}
-        className="w-[2000px] h-[2000px] md:w-full md:h-full"
-        viewBox="0 0 1000 1000"
-        style={{
-          transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
-          transformOrigin: 'center',
-        }}
+      <div 
+        className="min-w-max min-h-max p-10 md:p-20 flex items-center justify-center"
+        style={{ width: `${2000 * zoom}px`, height: `${2000 * zoom}px` }}
       >
-        <defs>
-          <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth="1"/>
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grid)" />
-        
-        {visibleKecamatans.map((kecamatan) => (
-          <MapKecamatan key={kecamatan.id} kecamatan={kecamatan} />
-        ))}
+        <svg
+          ref={svgRef}
+          className="bg-white shadow-md"
+          width={2000 * zoom}
+          height={2000 * zoom}
+          viewBox="0 0 1000 1000"
+        >
+          <defs>
+            <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+              <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(0,0,0,0.05)" strokeWidth="1"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid)" />
+          
+          {/* Scale everything inside the SVG to match the 2000x2000 viewBox if needed, but since viewBox is 2000x2000, it scales automatically */}
+          {visibleKecamatans.map((kecamatan) => (
+            <MapKecamatan key={kecamatan.id} kecamatan={kecamatan} />
+          ))}
 
-        {selectionBox && (
-          <rect
-            x={Math.min(selectionBox.startX, selectionBox.currentX)}
-            y={Math.min(selectionBox.startY, selectionBox.currentY)}
-            width={Math.abs(selectionBox.currentX - selectionBox.startX)}
-            height={Math.abs(selectionBox.currentY - selectionBox.startY)}
-            fill="rgba(249, 115, 22, 0.1)"
-            stroke="#f97316"
-            strokeWidth={1 / zoom}
-            strokeDasharray="4 4"
-            pointerEvents="none"
-          />
-        )}
-      </svg>
+          {selectionBox && (
+            <rect
+              x={Math.min(selectionBox.startX, selectionBox.currentX)}
+              y={Math.min(selectionBox.startY, selectionBox.currentY)}
+              width={Math.abs(selectionBox.currentX - selectionBox.startX)}
+              height={Math.abs(selectionBox.currentY - selectionBox.startY)}
+              fill="rgba(249, 115, 22, 0.1)"
+              stroke="#f97316"
+              strokeWidth={1}
+              strokeDasharray="4 4"
+              pointerEvents="none"
+            />
+          )}
+        </svg>
+      </div>
     </div>
   );
 };
