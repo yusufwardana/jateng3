@@ -52,7 +52,7 @@ export const Sidebar = () => {
   const selectedCluster = clusters.find(c => c.id === selectedClusterId);
 
   return (
-    <div className="w-full md:w-80 h-[50vh] md:h-full border-t md:border-t-0 md:border-l border-slate-200 bg-white flex flex-col flex-shrink-0">
+    <div className="w-full md:w-80 h-[60vh] md:h-full border-t md:border-t-0 md:border-l border-slate-200 bg-white flex flex-col flex-shrink-0">
       <Tabs defaultValue="hierarchy" className="flex-1 flex flex-col">
         <div className="px-4 pt-4">
           <TabsList className="grid w-full grid-cols-3">
