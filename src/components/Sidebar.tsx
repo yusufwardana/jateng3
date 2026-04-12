@@ -73,8 +73,8 @@ export const Sidebar = () => {
           </TabsList>
         </div>
 
-        <TabsContent value="hierarchy" className="flex-1 overflow-y-auto mt-0">
-          <ScrollArea className="h-full p-4">
+        <TabsContent value="hierarchy" className="flex-1 flex flex-col min-h-0 mt-0">
+          <ScrollArea className="flex-1 p-4">
             <div className="space-y-6">
               {regions.map(region => (
                 <div key={region.id} className="space-y-2">
@@ -227,8 +227,8 @@ export const Sidebar = () => {
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="layers" className="flex-1 overflow-y-auto mt-0">
-          <ScrollArea className="h-full p-4">
+        <TabsContent value="layers" className="flex-1 flex flex-col min-h-0 mt-0">
+          <ScrollArea className="flex-1 p-4">
             <div className="flex justify-end mb-4">
               <Button 
                 variant="outline" 
@@ -366,8 +366,8 @@ export const Sidebar = () => {
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="properties" className="flex-1 overflow-y-auto mt-0">
-          <ScrollArea className="h-full p-4">
+        <TabsContent value="properties" className="flex-1 flex flex-col min-h-0 mt-0">
+          <ScrollArea className="flex-1 p-4">
             {!user ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 text-sm italic text-center px-4">
                 <Lock size={32} className="mb-4 opacity-20" />
