@@ -25,12 +25,14 @@ async function startServer() {
     try {
       // 1. Try Vercel KV
       if (isKvConfigured) {
+        res.setHeader('x-storage-type', 'cloud');
         const data = await kv.get("map-data");
         return res.json(data || { regions: [], clusters: [], areas: [], kecamatans: [] });
       }
 
       // 2. Try Vercel Blob
       if (isBlobConfigured) {
+        res.setHeader('x-storage-type', 'cloud');
         try {
           const { blobs } = await import('@vercel/blob').then(m => m.list());
           const mapBlob = blobs.find(b => b.pathname === 'map-data.json');
@@ -45,6 +47,7 @@ async function startServer() {
       }
 
       // 3. Fallback to Local File
+      res.setHeader('x-storage-type', 'local');
       const data = await fs.readFile(DATA_FILE, "utf-8");
       res.json(JSON.parse(data));
     } catch (error: any) {

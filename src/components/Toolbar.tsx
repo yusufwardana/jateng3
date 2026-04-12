@@ -16,7 +16,9 @@ import {
   CloudUpload,
   CloudDownload,
   Lock,
-  Unlock
+  Unlock,
+  Download as DownloadIcon,
+  Database
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { parseSVG } from '../lib/svg-parser';
@@ -43,6 +45,28 @@ export const Toolbar = () => {
     setAllLocked,
     lastSaved
   } = useMapStore();
+
+  const [storageType, setStorageType] = useState<'Local' | 'Cloud'>('Local');
+
+  useEffect(() => {
+    // Check storage type from server
+    fetch('/api/map-data')
+      .then(res => {
+        const isCloud = res.headers.get('x-storage-type') === 'cloud';
+        setStorageType(isCloud ? 'Cloud' : 'Local');
+      });
+  }, []);
+
+  const downloadBackup = () => {
+    const data = { regions, clusters, areas, kecamatans };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `atlas-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const { undo, redo, pastStates, futureStates } = useStore(useMapStore.temporal, (state) => state);
 
@@ -180,32 +204,46 @@ export const Toolbar = () => {
 
         <Separator orientation="vertical" className="h-8 mx-2" />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <div className={cn(
+            "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium border",
+            storageType === 'Cloud' 
+              ? "bg-green-50 text-green-700 border-green-200" 
+              : "bg-amber-50 text-amber-700 border-amber-200"
+          )}>
+            <Database size={12} />
+            {storageType === 'Cloud' ? 'Vercel Cloud (Persistent)' : 'Local File (Temporary)'}
+          </div>
+
           {lastSaved && (
-            <span className="text-[10px] text-slate-400 mr-2 italic">
+            <span className="text-[10px] text-slate-400 italic">
               Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="gap-2" 
-            onClick={saveData}
-            disabled={isSaving}
-          >
-            <CloudUpload size={16} className={cn(isSaving && "animate-pulse")} />
-            {isSaving ? 'Saving...' : 'Save Local'}
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="gap-2" 
-            onClick={loadData}
-            disabled={isLoading}
-          >
-            <CloudDownload size={16} className={cn(isLoading && "animate-pulse")} />
-            {isLoading ? 'Loading...' : 'Load Local'}
-          </Button>
+          
+          <div className="flex items-center gap-1">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2 h-8" 
+              onClick={saveData}
+              disabled={isSaving}
+            >
+              <CloudUpload size={14} className={cn(isSaving && "animate-pulse")} />
+              Save
+            </Button>
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2 h-8 text-slate-500" 
+              onClick={downloadBackup}
+              title="Download Backup to Computer"
+            >
+              <DownloadIcon size={14} />
+              Backup
+            </Button>
+          </div>
         </div>
       </div>
     </div>
