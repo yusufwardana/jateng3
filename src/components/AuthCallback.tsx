@@ -5,10 +5,17 @@ export function AuthCallback() {
     // Supabase handles the hash/query params automatically on the client side
     // but we need to notify the parent window and close the popup
     if (window.opener) {
-      window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS' }, '*');
-      window.close();
+      console.log('✅ OAuth callback: Session should be saved in localStorage');
+      
+      // Give Supabase time to save session to localStorage
+      setTimeout(() => {
+        console.log('✅ OAuth callback: notifying parent window');
+        window.opener.postMessage({ type: 'OAUTH_AUTH_SUCCESS' }, '*');
+        window.close();
+      }, 1000);
     } else {
       // Fallback for non-popup flows
+      console.log('ℹ️ AuthCallback: No window.opener, redirecting to home');
       window.location.href = '/';
     }
   }, []);
