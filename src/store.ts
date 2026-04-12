@@ -1,8 +1,12 @@
 import { create } from 'zustand';
 import { temporal } from 'zundo';
 import { MapState, Region, Cluster, Area, Kecamatan } from './types';
+import { supabase } from './lib/supabase';
+import { User } from '@supabase/supabase-js';
 
 interface MapStore extends MapState {
+  user: User | null;
+  setUser: (user: User | null) => void;
   addRegion: (region: Region) => void;
   addCluster: (cluster: Cluster) => void;
   addArea: (area: Area) => void;
@@ -33,6 +37,7 @@ interface MapStore extends MapState {
 export const useMapStore = create<MapStore>()(
   temporal(
     (set, get) => ({
+      user: null,
       regions: [{ id: 'jateng-3', name: 'JATENG 3' }],
       clusters: [{ id: 'default-cluster', name: 'Main Cluster', color: '#3b82f6', regionId: 'jateng-3' }],
       areas: [{ id: 'default-area', name: 'Main Area', color: '#3b82f6', clusterId: 'default-cluster' }],
@@ -48,6 +53,7 @@ export const useMapStore = create<MapStore>()(
       isLoading: false,
       lastSaved: null,
 
+      setUser: (user) => set({ user }),
       addRegion: (region) => set((state) => ({ regions: [...state.regions, region] })),
       addCluster: (cluster) => set((state) => ({ clusters: [...state.clusters, cluster] })),
       addArea: (area) => set((state) => ({ areas: [...state.areas, area] })),
@@ -110,16 +116,20 @@ export const useMapStore = create<MapStore>()(
       })),
 
       saveData: async () => {
+        const { user, regions, clusters, areas, kecamatans } = get();
+        if (!user) return;
+
         set({ isSaving: true });
         try {
-          const { regions, clusters, areas, kecamatans } = get();
-          const response = await fetch("/api/map-data", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ regions, clusters, areas, kecamatans }),
-          });
+          const { error } = await supabase
+            .from('map_data')
+            .upsert({ 
+              id: user.id, 
+              data: { regions, clusters, areas, kecamatans },
+              updated_at: new Date().toISOString()
+            });
           
-          if (!response.ok) throw new Error('Failed to save data');
+          if (error) throw error;
           set({ lastSaved: new Date() });
         } catch (error) {
           console.error('Error saving data:', error);
@@ -129,19 +139,27 @@ export const useMapStore = create<MapStore>()(
       },
 
       loadData: async () => {
+        const { user } = get();
+        if (!user) return;
+
         set({ isLoading: true });
         try {
-          const response = await fetch("/api/map-data");
-          if (!response.ok) throw new Error('Failed to load data');
-          const data = await response.json();
+          const { data, error } = await supabase
+            .from('map_data')
+            .select('data')
+            .eq('id', user.id)
+            .single();
           
-          if (data) {
+          if (error && error.code !== 'PGRST116') throw error;
+          
+          if (data?.data) {
             set({ 
-              regions: data.regions || [],
-              clusters: data.clusters || [],
-              areas: data.areas || [],
-              kecamatans: data.kecamatans || []
+              regions: data.data.regions || [],
+              clusters: data.data.clusters || [],
+              areas: data.data.areas || [],
+              kecamatans: data.data.kecamatans || []
             });
+            set({ lastSaved: new Date() });
           }
         } catch (error) {
           console.error('Error loading data:', error);
@@ -149,12 +167,6 @@ export const useMapStore = create<MapStore>()(
           set({ isLoading: false });
         }
       }
-    }),
-    {
-      partialize: (state) => {
-        const { zoom, pan, selectedKecamatanId, selectedAreaId, selectedClusterId, selectedRegionId, isSaving, isLoading, isAllLocked, lastSaved, ...rest } = state;
-        return rest;
-      },
-    }
+    })
   )
 );

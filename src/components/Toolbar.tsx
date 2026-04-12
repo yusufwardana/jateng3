@@ -3,6 +3,7 @@ import { useStore } from 'zustand';
 import { Button } from './ui/button';
 import { Slider } from './ui/slider';
 import { Separator } from './ui/separator';
+import { Input } from './ui/input';
 import { 
   Plus, 
   Minus, 
@@ -18,12 +19,16 @@ import {
   Lock,
   Unlock,
   Download as DownloadIcon,
-  Database
+  Database,
+  LogIn,
+  LogOut,
+  User as UserIcon
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { parseSVG } from '../lib/svg-parser';
 import { cn } from '../lib/utils';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { signInWithEmail, signOut } from '../lib/supabase';
 
 export const Toolbar = () => {
   const { 
@@ -43,21 +48,34 @@ export const Toolbar = () => {
     isLoading,
     isAllLocked,
     setAllLocked,
-    lastSaved
+    lastSaved,
+    user
   } = useMapStore();
 
-  const [storageType, setStorageType] = useState<'Local' | 'Cloud' | 'Ephemeral'>('Local');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
 
-  useEffect(() => {
-    // Check storage type from server
-    fetch('/api/map-data')
-      .then(res => {
-        const type = res.headers.get('x-storage-type');
-        if (type === 'cloud') setStorageType('Cloud');
-        else if (type === 'local-ephemeral') setStorageType('Ephemeral');
-        else setStorageType('Local');
-      });
-  }, []);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    try {
+      const { error } = await signInWithEmail(email, password);
+      if (error) throw error;
+      setShowLoginForm(false);
+      setEmail('');
+      setPassword('');
+    } catch (error: any) {
+      alert(error.message || 'Login failed');
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+  };
 
   const downloadBackup = () => {
     const data = { regions, clusters, areas, kecamatans };
@@ -176,6 +194,65 @@ export const Toolbar = () => {
       </div>
 
       <div className="flex items-center gap-3">
+        {user ? (
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end">
+              <span className="text-xs font-medium text-slate-900">{user.email}</span>
+              <span className="text-[10px] text-slate-500">Admin Mode</span>
+            </div>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400" onClick={handleLogout} title="Logout">
+              <LogOut size={16} />
+            </Button>
+            <Separator orientation="vertical" className="h-8 mx-2" />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2 h-8" 
+              onClick={saveData}
+              disabled={isSaving}
+            >
+              <CloudUpload size={14} className={cn(isSaving && "animate-pulse")} />
+              {isSaving ? 'Saving...' : 'Save Cloud'}
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            {showLoginForm ? (
+              <form onSubmit={handleLogin} className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-300">
+                <Input 
+                  type="email" 
+                  placeholder="Email" 
+                  className="h-8 w-40 text-xs" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <Input 
+                  type="password" 
+                  placeholder="Password" 
+                  className="h-8 w-40 text-xs" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <Button type="submit" size="sm" className="h-8" disabled={isLoggingIn}>
+                  {isLoggingIn ? '...' : 'Login'}
+                </Button>
+                <Button type="button" variant="ghost" size="sm" className="h-8" onClick={() => setShowLoginForm(false)}>
+                  Cancel
+                </Button>
+              </form>
+            ) : (
+              <Button variant="outline" size="sm" className="gap-2 h-8" onClick={() => setShowLoginForm(true)}>
+                <LogIn size={14} />
+                Admin Login
+              </Button>
+            )}
+          </div>
+        )}
+
+        <Separator orientation="vertical" className="h-8 mx-2" />
+
         <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={clearAll}>
           <Trash2 size={16} className="mr-2" />
           Clear All
@@ -209,38 +286,19 @@ export const Toolbar = () => {
         <div className="flex items-center gap-3">
           <div className={cn(
             "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium border",
-            storageType === 'Cloud' 
-              ? "bg-green-50 text-green-700 border-green-200" 
-              : storageType === 'Ephemeral'
-              ? "bg-red-50 text-red-700 border-red-200 animate-pulse"
-              : "bg-amber-50 text-amber-700 border-amber-200"
+            user ? "bg-green-50 text-green-700 border-green-200" : "bg-blue-50 text-blue-700 border-blue-200"
           )}>
             <Database size={12} />
-            {storageType === 'Cloud' 
-              ? 'Vercel Cloud (Persistent)' 
-              : storageType === 'Ephemeral'
-              ? 'Vercel Local (WILL BE LOST - REDEPLOY NOW)'
-              : 'Local File (Temporary)'}
+            {user ? 'Supabase Cloud' : 'Browser Local'}
           </div>
 
           {lastSaved && (
             <span className="text-[10px] text-slate-400 italic">
-              Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {user ? 'Cloud saved' : 'Auto-saved'} {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
           
           <div className="flex items-center gap-1">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-2 h-8" 
-              onClick={saveData}
-              disabled={isSaving}
-            >
-              <CloudUpload size={14} className={cn(isSaving && "animate-pulse")} />
-              Save
-            </Button>
-            
             <Button 
               variant="ghost" 
               size="sm" 
@@ -249,7 +307,7 @@ export const Toolbar = () => {
               title="Download Backup to Computer"
             >
               <DownloadIcon size={14} />
-              Backup
+              Backup (.json)
             </Button>
           </div>
         </div>
