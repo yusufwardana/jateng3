@@ -141,20 +141,20 @@ export const Toolbar = () => {
   };
 
   return (
-    <div className="h-16 border-b border-slate-200 bg-white px-4 md:px-6 flex items-center justify-between shadow-sm z-10 gap-4 overflow-x-auto flex-nowrap">
-      <div className="flex items-center justify-start gap-2 md:gap-4 flex-shrink-0">
-        <div className="flex items-center gap-2 mr-2 md:mr-6">
+    <div className="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between shadow-sm z-10 gap-4 overflow-x-auto flex-nowrap">
+      <div className="flex items-center justify-start gap-4 flex-shrink-0">
+        <div className="flex items-center gap-2 mr-6">
           <div className="p-2 bg-purple-800 rounded-lg text-white">
             <MapIcon size={20} />
           </div>
-          <h1 className="font-bold text-lg md:text-xl tracking-tight text-purple-900">Jateng 3</h1>
+          <h1 className="font-bold text-xl tracking-tight text-purple-900">Jateng 3</h1>
         </div>
 
-        <div className="flex items-center gap-1 md:gap-2 bg-slate-100 p-1 rounded-lg">
+        <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setZoom(Math.max(0.1, zoom - 0.1))}>
             <Minus size={16} />
           </Button>
-          <div className="w-10 md:w-12 text-center text-xs font-medium text-slate-600">
+          <div className="w-12 text-center text-xs font-medium text-slate-600">
             {Math.round(zoom * 100)}%
           </div>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setZoom(Math.min(5, zoom + 0.1))}>
@@ -162,12 +162,12 @@ export const Toolbar = () => {
           </Button>
         </div>
 
-        <Button variant="ghost" size="sm" className="gap-1 md:gap-2 text-slate-600 px-2 md:px-3" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>
+        <Button variant="ghost" size="sm" className="gap-2 text-slate-600 px-3" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>
           <Maximize size={14} />
-          <span className="hidden sm:inline">Reset View</span>
+          <span>Reset View</span>
         </Button>
 
-        <Separator orientation="vertical" className="h-8 mx-1 md:mx-2 hidden sm:block" />
+        <Separator orientation="vertical" className="h-8 mx-2" />
 
         <div className="flex items-center gap-1">
           <Button 
@@ -193,36 +193,36 @@ export const Toolbar = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2 md:gap-3 flex-shrink-0">
+      <div className="flex items-center justify-end gap-3 flex-shrink-0">
         {user ? (
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="flex flex-col items-end hidden sm:flex">
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end">
               <span className="text-xs font-medium text-slate-900">{user.email}</span>
               <span className="text-[10px] text-slate-500">Admin Mode</span>
             </div>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400" onClick={handleLogout} title="Logout">
               <LogOut size={16} />
             </Button>
-            <Separator orientation="vertical" className="h-8 mx-1 md:mx-2 hidden sm:block" />
+            <Separator orientation="vertical" className="h-8 mx-2" />
             <Button 
               variant="outline" 
               size="sm" 
-              className="gap-1 md:gap-2 h-8 px-2 md:px-3" 
+              className="gap-2 h-8 px-3" 
               onClick={saveData}
               disabled={isSaving}
             >
               <CloudUpload size={14} className={cn(isSaving && "animate-pulse")} />
-              <span className="hidden sm:inline">{isSaving ? 'Saving...' : 'Save Cloud'}</span>
+              <span>{isSaving ? 'Saving...' : 'Save Cloud'}</span>
             </Button>
           </div>
         ) : (
           <div className="flex items-center gap-2">
             {showLoginForm ? (
-              <form onSubmit={handleLogin} className="flex items-center gap-1 md:gap-2 animate-in fade-in slide-in-from-right-4 duration-300">
+              <form onSubmit={handleLogin} className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-300">
                 <Input 
                   type="email" 
                   placeholder="Email" 
-                  className="h-8 w-24 sm:w-40 text-xs" 
+                  className="h-8 w-40 text-xs" 
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -230,71 +230,71 @@ export const Toolbar = () => {
                 <Input 
                   type="password" 
                   placeholder="Password" 
-                  className="h-8 w-24 sm:w-40 text-xs" 
+                  className="h-8 w-40 text-xs" 
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-                <Button type="submit" size="sm" className="h-8 px-2 md:px-3" disabled={isLoggingIn}>
+                <Button type="submit" size="sm" className="h-8 px-3" disabled={isLoggingIn}>
                   {isLoggingIn ? '...' : 'Login'}
                 </Button>
-                <Button type="button" variant="ghost" size="sm" className="h-8 px-2 md:px-3" onClick={() => setShowLoginForm(false)}>
+                <Button type="button" variant="ghost" size="sm" className="h-8 px-3" onClick={() => setShowLoginForm(false)}>
                   Cancel
                 </Button>
               </form>
             ) : (
-              <Button variant="outline" size="sm" className="gap-1 md:gap-2 h-8 px-2 md:px-3" onClick={() => setShowLoginForm(true)}>
+              <Button variant="outline" size="sm" className="gap-2 h-8 px-3" onClick={() => setShowLoginForm(true)}>
                 <LogIn size={14} />
-                <span className="hidden sm:inline">Admin Login</span>
+                <span>Admin Login</span>
               </Button>
             )}
           </div>
         )}
 
-        <Separator orientation="vertical" className="h-8 mx-1 md:mx-2 hidden sm:block" />
+        <Separator orientation="vertical" className="h-8 mx-2" />
 
-        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 px-2 md:px-3" onClick={clearAll} title="Clear All">
-          <Trash2 size={16} className="sm:mr-2" />
-          <span className="hidden sm:inline">Clear All</span>
+        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 px-3" onClick={clearAll} title="Clear All">
+          <Trash2 size={16} className="mr-2" />
+          <span>Clear All</span>
         </Button>
 
         <Button 
           variant="ghost" 
           size="sm" 
-          className={cn("gap-1 md:gap-2 px-2 md:px-3", isAllLocked ? "text-amber-600 hover:bg-amber-50" : "text-slate-600")}
+          className={cn("gap-2 px-3", isAllLocked ? "text-amber-600 hover:bg-amber-50" : "text-slate-600")}
           onClick={() => setAllLocked(!isAllLocked)}
           title={isAllLocked ? 'Locked' : 'Unlocked'}
         >
           {isAllLocked ? <Lock size={16} /> : <Unlock size={16} />}
-          <span className="hidden sm:inline">{isAllLocked ? 'Locked' : 'Unlocked'}</span>
+          <span>{isAllLocked ? 'Locked' : 'Unlocked'}</span>
         </Button>
 
         <div {...getRootProps()}>
           <input {...getInputProps()} />
-          <Button variant="outline" size="sm" className={cn("gap-1 md:gap-2 px-2 md:px-3 h-8", isDragActive && "border-orange-500 bg-orange-50")} title="Upload SVG">
+          <Button variant="outline" size="sm" className={cn("gap-2 px-3 h-8", isDragActive && "border-orange-500 bg-orange-50")} title="Upload SVG">
             <Upload size={16} />
-            <span className="hidden sm:inline">Upload SVG</span>
+            <span>Upload SVG</span>
           </Button>
         </div>
         
-        <Button variant="default" size="sm" className="gap-1 md:gap-2 bg-orange-500 hover:bg-orange-600 text-white px-2 md:px-3 h-8" onClick={exportMap} title="Export JSON">
+        <Button variant="default" size="sm" className="gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 h-8" onClick={exportMap} title="Export JSON">
           <Download size={16} />
-          <span className="hidden sm:inline">Export JSON</span>
+          <span>Export JSON</span>
         </Button>
 
-        <Separator orientation="vertical" className="h-8 mx-1 md:mx-2 hidden lg:block" />
+        <Separator orientation="vertical" className="h-8 mx-2" />
 
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-3">
           <div className={cn(
             "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium border",
             user ? "bg-green-50 text-green-700 border-green-200" : "bg-purple-50 text-purple-700 border-purple-200"
           )}>
             <Database size={12} />
-            <span className="hidden sm:inline">{user ? 'Supabase Cloud' : 'Browser Local'}</span>
+            <span>{user ? 'Supabase Cloud' : 'Browser Local'}</span>
           </div>
 
           {lastSaved && (
-            <span className="text-[10px] text-slate-400 italic hidden lg:inline">
+            <span className="text-[10px] text-slate-400 italic">
               {user ? 'Cloud saved' : 'Auto-saved'} {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
@@ -303,12 +303,12 @@ export const Toolbar = () => {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="gap-1 md:gap-2 h-8 text-slate-500 px-2 md:px-3" 
+              className="gap-2 h-8 text-slate-500 px-3" 
               onClick={downloadBackup}
               title="Download Backup to Computer"
             >
               <DownloadIcon size={14} />
-              <span className="hidden sm:inline">Backup (.json)</span>
+              <span>Backup (.json)</span>
             </Button>
           </div>
         </div>

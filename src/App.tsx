@@ -52,7 +52,7 @@ export default function App() {
   }, [kecamatans, areas, clusters, regions, user, saveData]);
 
   return (
-    <div className="flex flex-col min-h-screen md:h-screen w-full bg-slate-50 text-slate-900 font-sans antialiased overflow-y-auto md:overflow-hidden relative">
+    <div className="flex flex-col h-screen w-full bg-slate-50 text-slate-900 font-sans antialiased overflow-hidden relative">
       {isLoading && (
         <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] z-[100] flex items-center justify-center">
           <div className="bg-white p-4 rounded-xl shadow-2xl border border-slate-200 flex flex-col items-center gap-3">
@@ -62,8 +62,8 @@ export default function App() {
         </div>
       )}
       <Toolbar />
-      <div className="flex flex-col md:flex-row flex-1">
-        <main className="relative p-2 md:p-6 h-[60vh] md:h-auto md:flex-1 flex-shrink-0">
+      <div className="flex flex-row flex-1">
+        <main className="relative p-6 h-auto flex-1 flex-shrink-0">
           <MapCanvas />
         </main>
         <Sidebar />

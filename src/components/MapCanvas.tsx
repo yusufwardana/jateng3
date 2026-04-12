@@ -174,7 +174,7 @@ export const MapCanvas = () => {
       onContextMenu={(e) => e.preventDefault()}
     >
       <div 
-        className="min-w-max min-h-max p-10 md:p-20 flex items-center justify-center"
+        className="min-w-max min-h-max p-20 flex items-center justify-center"
         style={{ width: `${2000 * zoom}px`, height: `${2000 * zoom}px` }}
       >
         <svg
