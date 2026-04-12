@@ -13,6 +13,8 @@ const DATA_FILE = path.join(__dirname, "map-data.json");
 const isKvConfigured = Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
 // Helper to check if Vercel Blob is configured
 const isBlobConfigured = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+// Check if running on Vercel
+const isVercel = Boolean(process.env.VERCEL);
 
 async function startServer() {
   const app = express();
@@ -53,7 +55,7 @@ async function startServer() {
       }
 
       // 3. Fallback to Local File
-      res.setHeader('x-storage-type', 'local');
+      res.setHeader('x-storage-type', isVercel ? 'local-ephemeral' : 'local');
       const data = await fs.readFile(DATA_FILE, "utf-8");
       res.json(JSON.parse(data));
     } catch (error: any) {

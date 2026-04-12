@@ -46,14 +46,16 @@ export const Toolbar = () => {
     lastSaved
   } = useMapStore();
 
-  const [storageType, setStorageType] = useState<'Local' | 'Cloud'>('Local');
+  const [storageType, setStorageType] = useState<'Local' | 'Cloud' | 'Ephemeral'>('Local');
 
   useEffect(() => {
     // Check storage type from server
     fetch('/api/map-data')
       .then(res => {
-        const isCloud = res.headers.get('x-storage-type') === 'cloud';
-        setStorageType(isCloud ? 'Cloud' : 'Local');
+        const type = res.headers.get('x-storage-type');
+        if (type === 'cloud') setStorageType('Cloud');
+        else if (type === 'local-ephemeral') setStorageType('Ephemeral');
+        else setStorageType('Local');
       });
   }, []);
 
@@ -209,10 +211,16 @@ export const Toolbar = () => {
             "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium border",
             storageType === 'Cloud' 
               ? "bg-green-50 text-green-700 border-green-200" 
+              : storageType === 'Ephemeral'
+              ? "bg-red-50 text-red-700 border-red-200 animate-pulse"
               : "bg-amber-50 text-amber-700 border-amber-200"
           )}>
             <Database size={12} />
-            {storageType === 'Cloud' ? 'Vercel Cloud (Persistent)' : 'Local File (Temporary)'}
+            {storageType === 'Cloud' 
+              ? 'Vercel Cloud (Persistent)' 
+              : storageType === 'Ephemeral'
+              ? 'Vercel Local (WILL BE LOST - REDEPLOY NOW)'
+              : 'Local File (Temporary)'}
           </div>
 
           {lastSaved && (
