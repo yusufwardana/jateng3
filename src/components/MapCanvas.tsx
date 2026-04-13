@@ -3,7 +3,8 @@ import { useMapStore } from '../store';
 import { MapKecamatan } from './MapKecamatan';
 
 export const MapCanvas = () => {
-  const { kecamatans, areas, clusters, regions, zoom, setZoom, pan, setPan, setSelectedKecamatan, setSelectedKecamatanIds, selectedKecamatanIds } = useMapStore();
+  const { kecamatans, areas, clusters, regions, zoom, setZoom, pan, setPan, setSelectedKecamatan, setSelectedKecamatanIds, selectedKecamatanIds, isPresentationMode, selectedKecamatanId } = useMapStore();
+  const selectedKecamatan = kecamatans.find(k => k.id === selectedKecamatanId);
   const [isPanning, setIsPanning] = useState(false);
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -21,6 +22,14 @@ export const MapCanvas = () => {
     if (!region || region.isVisible === false) return false;
     return true;
   });
+
+  // Center on selected item when entering presentation mode
+  useEffect(() => {
+    if (isPresentationMode && selectedKecamatan && containerRef.current) {
+      containerRef.current.scrollLeft = selectedKecamatan.position.x * zoom - containerRef.current.clientWidth / 2;
+      containerRef.current.scrollTop = selectedKecamatan.position.y * zoom - containerRef.current.clientHeight / 2;
+    }
+  }, [isPresentationMode, selectedKecamatan, zoom]);
 
   // Initial centering
   useEffect(() => {

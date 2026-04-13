@@ -9,9 +9,10 @@ import { Sidebar } from './components/Sidebar';
 import { MapCanvas } from './components/MapCanvas';
 import { useMapStore } from './store';
 import { supabase } from './lib/supabase';
+import { cn } from './lib/utils';
 
 export default function App() {
-  const { kecamatans, areas, clusters, regions, user, setUser, loadData, saveData, isLoading } = useMapStore();
+  const { kecamatans, areas, clusters, regions, user, setUser, loadData, saveData, isLoading, isPresentationMode } = useMapStore();
 
   // Initial Load
   useEffect(() => {
@@ -61,12 +62,12 @@ export default function App() {
           </div>
         </div>
       )}
-      <Toolbar />
+      {!isPresentationMode && <Toolbar />}
       <div className="flex flex-row flex-1 overflow-hidden">
-        <main className="relative flex-1 h-full overflow-hidden p-4">
+        <main className={cn("relative flex-1 h-full overflow-hidden p-4", isPresentationMode && "p-0")}>
           <MapCanvas />
         </main>
-        <Sidebar />
+        {!isPresentationMode && <Sidebar />}
       </div>
     </div>
   );

@@ -23,7 +23,8 @@ import {
   LogIn,
   LogOut,
   User as UserIcon,
-  Camera
+  Camera,
+  Presentation
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useDropzone } from 'react-dropzone';
@@ -50,6 +51,8 @@ export const Toolbar = () => {
     isLoading,
     isAllLocked,
     setAllLocked,
+    isPresentationMode,
+    setPresentationMode,
     lastSaved,
     user,
     selectedKecamatanIds,
@@ -274,6 +277,17 @@ export const Toolbar = () => {
         <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 px-3" onClick={clearAll} title="Clear All">
           <Trash2 size={16} className="mr-2" />
           <span>Clear All</span>
+        </Button>
+
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className={cn("gap-2 px-3", isPresentationMode ? "text-purple-600 bg-purple-50" : "text-slate-600")}
+          onClick={() => setPresentationMode(!isPresentationMode)}
+          title="Presentation Mode"
+        >
+          <Presentation size={16} />
+          <span>{isPresentationMode ? 'Exit Presentation' : 'Presentation'}</span>
         </Button>
 
         <Button 

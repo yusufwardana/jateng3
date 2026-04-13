@@ -45,6 +45,7 @@ export interface MapState {
   selectedClusterId: string | null;
   selectedRegionId: string | null;
   isAllLocked: boolean;
+  isPresentationMode: boolean;
   zoom: number;
   pan: { x: number; y: number };
 }

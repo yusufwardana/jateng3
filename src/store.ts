@@ -24,6 +24,7 @@ interface MapStore extends MapState {
   setSelectedCluster: (id: string | null) => void;
   setSelectedRegion: (id: string | null) => void;
   setAllLocked: (locked: boolean) => void;
+  setPresentationMode: (mode: boolean) => void;
   setZoom: (zoom: number) => void;
   setPan: (pan: { x: number; y: number }) => void;
   deleteKecamatan: (id: string) => void;
@@ -53,6 +54,7 @@ export const useMapStore = create<MapStore>()(
       selectedClusterId: 'default-cluster',
       selectedRegionId: 'jateng-3',
       isAllLocked: false,
+      isPresentationMode: false,
       zoom: 1,
       pan: { x: 0, y: 0 },
       isSaving: false,
@@ -117,6 +119,7 @@ export const useMapStore = create<MapStore>()(
       setSelectedCluster: (id) => set({ selectedClusterId: id }),
       setSelectedRegion: (id) => set({ selectedRegionId: id }),
       setAllLocked: (locked) => set({ isAllLocked: locked }),
+      setPresentationMode: (mode) => set({ isPresentationMode: mode }),
       setZoom: (zoom) => set({ zoom }),
       setPan: (pan) => set({ pan }),
 
