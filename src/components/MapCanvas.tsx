@@ -26,8 +26,12 @@ export const MapCanvas = () => {
   // Center on selected item when entering presentation mode
   useEffect(() => {
     if (isPresentationMode && selectedKecamatan && containerRef.current) {
-      containerRef.current.scrollLeft = selectedKecamatan.position.x * zoom - containerRef.current.clientWidth / 2;
-      containerRef.current.scrollTop = selectedKecamatan.position.y * zoom - containerRef.current.clientHeight / 2;
+      const container = containerRef.current;
+      const x = (selectedKecamatan.position.x + CANVAS_SIZE / 2 - 500) * zoom;
+      const y = (selectedKecamatan.position.y + CANVAS_SIZE / 2 - 500) * zoom;
+      
+      container.scrollLeft = x - container.clientWidth / 2;
+      container.scrollTop = y - container.clientHeight / 2;
     }
   }, [isPresentationMode, selectedKecamatan, zoom]);
 
