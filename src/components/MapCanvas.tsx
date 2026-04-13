@@ -3,7 +3,7 @@ import { useMapStore } from '../store';
 import { MapKecamatan } from './MapKecamatan';
 
 export const MapCanvas = () => {
-  const { kecamatans, areas, clusters, regions, zoom, setZoom, pan, setPan, setSelectedKecamatan, setSelectedKecamatanIds, selectedKecamatanIds, isPresentationMode, selectedKecamatanId } = useMapStore();
+  const { kecamatans, areas, clusters, regions, zoom, setZoom, pan, setPan, setSelectedKecamatan, setSelectedKecamatanIds, selectedKecamatanIds, isPresentationMode, setPresentationMode, selectedKecamatanId } = useMapStore();
   const selectedKecamatan = kecamatans.find(k => k.id === selectedKecamatanId);
   const [isPanning, setIsPanning] = useState(false);
   const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
@@ -34,6 +34,17 @@ export const MapCanvas = () => {
       container.scrollTop = y - container.clientHeight / 2;
     }
   }, [isPresentationMode, selectedKecamatan, zoom]);
+
+  // Exit presentation mode on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isPresentationMode) {
+        setPresentationMode(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPresentationMode, setPresentationMode]);
 
   // Initial centering
   useEffect(() => {
