@@ -145,7 +145,7 @@ export const MapCanvas = () => {
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full h-full bg-slate-100 overflow-auto border border-slate-200 rounded-xl shadow-inner ${isPanning ? 'cursor-grabbing' : selectionBox ? 'cursor-crosshair' : 'cursor-default'}`}
+      className={`map-canvas-container relative w-full h-full bg-slate-100 overflow-auto border border-slate-200 rounded-xl shadow-inner ${isPanning ? 'cursor-grabbing' : selectionBox ? 'cursor-crosshair' : 'cursor-default'}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}

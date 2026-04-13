@@ -22,8 +22,10 @@ import {
   Database,
   LogIn,
   LogOut,
-  User as UserIcon
+  User as UserIcon,
+  Camera
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 import { useDropzone } from 'react-dropzone';
 import { parseSVG } from '../lib/svg-parser';
 import { cn } from '../lib/utils';
@@ -138,6 +140,18 @@ export const Toolbar = () => {
     URL.revokeObjectURL(url);
   };
 
+  const exportAsImage = async () => {
+    const canvas = document.querySelector('.map-canvas-container') as HTMLElement;
+    if (!canvas) return;
+    
+    const canvasImage = await html2canvas(canvas);
+    const url = canvasImage.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `map-export-${new Date().toISOString().split('T')[0]}.png`;
+    a.click();
+  };
+
   const clearAll = () => {
     kecamatans.forEach(k => deleteKecamatan(k.id));
   };
@@ -193,26 +207,6 @@ export const Toolbar = () => {
             <Redo2 size={16} />
           </Button>
         </div>
-
-        {selectedKecamatanIds.length > 0 && user && (
-          <>
-            <Separator orientation="vertical" className="h-8 mx-2" />
-            <Button 
-              variant="destructive" 
-              size="sm" 
-              className="gap-2 h-8 px-3"
-              onClick={() => {
-                if (confirm(`Delete ${selectedKecamatanIds.length} selected kecamatans?`)) {
-                  selectedKecamatanIds.forEach(id => deleteKecamatan(id));
-                  setSelectedKecamatan(null);
-                }
-              }}
-            >
-              <Trash2 size={14} />
-              <span>Delete ({selectedKecamatanIds.length})</span>
-            </Button>
-          </>
-        )}
       </div>
 
       <div className="flex-1" />
@@ -304,6 +298,11 @@ export const Toolbar = () => {
         <Button variant="default" size="sm" className="gap-2 bg-orange-500 hover:bg-orange-600 text-white px-3 h-8" onClick={exportMap} title="Export JSON">
           <Download size={16} />
           <span>Export JSON</span>
+        </Button>
+
+        <Button variant="default" size="sm" className="gap-2 bg-purple-600 hover:bg-purple-700 text-white px-3 h-8" onClick={exportAsImage} title="Download Image">
+          <Camera size={16} />
+          <span>Download Image</span>
         </Button>
 
         <Separator orientation="vertical" className="h-8 mx-2" />
