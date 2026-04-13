@@ -105,7 +105,12 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
     <motion.g
       drag={!isLocked}
       dragMomentum={false}
-      onDragStart={() => setIsDragging(true)}
+      onDragStart={() => {
+        setIsDragging(true);
+        if (!selectedKecamatanIds.includes(kecamatan.id)) {
+          toggleKecamatanSelection(kecamatan.id, false);
+        }
+      }}
       onDrag={(_, info) => {
         if (selectedKecamatanIds.includes(kecamatan.id) && selectedKecamatanIds.length > 1) {
           const dx = info.delta.x / zoom;

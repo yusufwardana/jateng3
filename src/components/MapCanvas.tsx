@@ -200,8 +200,18 @@ export const MapCanvas = () => {
           <rect width="100%" height="100%" fill="url(#grid)" />
           
           <g transform={`translate(${CANVAS_SIZE/2 - 500}, ${CANVAS_SIZE/2 - 500})`}>
-            {visibleKecamatans.map((kecamatan) => (
-              <MapKecamatan key={kecamatan.id} kecamatan={kecamatan} />
+            {clusters.map(cluster => (
+              <g key={cluster.id} className="cluster-group" data-cluster-id={cluster.id}>
+                {visibleKecamatans
+                  .filter(kec => {
+                    const area = areas.find(a => a.id === kec.areaId);
+                    return area?.clusterId === cluster.id;
+                  })
+                  .map((kecamatan) => (
+                    <MapKecamatan key={kecamatan.id} kecamatan={kecamatan} />
+                  ))
+                }
+              </g>
             ))}
 
             {selectionBox && (
