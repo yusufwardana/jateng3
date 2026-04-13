@@ -87,8 +87,9 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
         });
       }}
       whileDrag={{ 
-        scale: (kecamatan.scale || 1) * 1.02,
-        filter: 'drop-shadow(0px 10px 10px rgba(0,0,0,0.2))',
+        scale: (kecamatan.scale || 1) * 1.05,
+        opacity: 0.6,
+        filter: 'drop-shadow(0px 10px 10px rgba(0,0,0,0.3))',
       }}
       initial={false}
       animate={{ 
@@ -121,8 +122,8 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
           height={bbox.height + 8}
           fill="none"
           stroke={isDragging ? "#f97316" : "#94a3b8"}
-          strokeWidth={isDragging ? 1.5 : 1}
-          strokeDasharray={isDragging ? "4 2" : "none"}
+          strokeWidth={isDragging ? 2 : 1}
+          strokeDasharray={isDragging ? "6 3" : "none"}
           rx="4"
           className="pointer-events-none transition-colors"
         />
