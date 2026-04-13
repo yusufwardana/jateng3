@@ -24,7 +24,8 @@ import {
   LogOut,
   User as UserIcon,
   Presentation,
-  AlignLeft
+  AlignLeft,
+  FolderOpen
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useDropzone } from 'react-dropzone';
@@ -94,6 +95,37 @@ export const Toolbar = () => {
     a.download = `atlas-backup-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const restoreBackup = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target?.result as string);
+          // Assuming the structure matches the state
+          if (data.regions && data.clusters && data.areas && data.kecamatans) {
+            useMapStore.setState({
+              regions: data.regions,
+              clusters: data.clusters,
+              areas: data.areas,
+              kecamatans: data.kecamatans
+            });
+          } else {
+            alert('Invalid backup format');
+          }
+        } catch (error) {
+          alert('Failed to parse backup file');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
   };
 
   const { undo, redo, pastStates, futureStates } = useStore(useMapStore.temporal, (state) => state);
@@ -326,6 +358,16 @@ export const Toolbar = () => {
           )}
           
           <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2 h-8 text-slate-500 px-3" 
+              onClick={restoreBackup}
+              title="Restore Backup from Computer"
+            >
+              <FolderOpen size={14} />
+              <span>Restore</span>
+            </Button>
             <Button 
               variant="ghost" 
               size="sm" 

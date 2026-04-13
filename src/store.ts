@@ -132,7 +132,7 @@ export const useMapStore = create<MapStore>()(
         return {
           kecamatans: state.kecamatans.map(k => ({
             ...k,
-            position: { ...k.position, x: k.position.x - minX }
+            position: { ...k.position, x: minX }
           }))
         };
       }),
