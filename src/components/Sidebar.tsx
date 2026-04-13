@@ -45,6 +45,7 @@ export const Sidebar = () => {
     deleteKecamatan,
     deleteArea,
     deleteCluster,
+    deleteRegion,
     addCluster,
     addArea,
     user
@@ -109,33 +110,49 @@ export const Sidebar = () => {
 
                 return (
                   <div key={region.id} className="space-y-2">
-                    <div className="flex items-center justify-between group">
-                      <button 
-                        onClick={() => toggleRegion(region.id)}
-                        className="flex items-center gap-2 font-semibold text-slate-900 hover:text-purple-700 transition-colors"
-                      >
-                        <ChevronRight 
-                          size={16} 
-                          className={cn("text-slate-400 transition-transform duration-200", (expandedRegions.includes(region.id) || searchQuery) && "rotate-90")} 
-                        />
-                        {region.name}
-                      </button>
-                      {user && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                          onClick={() => addCluster({
-                            id: Math.random().toString(36).substr(2, 9),
-                            name: 'New Cluster',
-                            color: '#f97316',
-                            regionId: region.id
-                          })}
+                      <div className="flex items-center justify-between group">
+                        <button 
+                          onClick={() => toggleRegion(region.id)}
+                          className="flex items-center gap-2 font-semibold text-slate-900 hover:text-purple-700 transition-colors"
                         >
-                          <Plus size={14} />
-                        </Button>
-                      )}
-                    </div>
+                          <ChevronRight 
+                            size={16} 
+                            className={cn("text-slate-400 transition-transform duration-200", (expandedRegions.includes(region.id) || searchQuery) && "rotate-90")} 
+                          />
+                          {region.name}
+                        </button>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                          {user && (
+                            <>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-6 w-6"
+                                onClick={() => addCluster({
+                                  id: Math.random().toString(36).substr(2, 9),
+                                  name: 'New Cluster',
+                                  color: '#f97316',
+                                  regionId: region.id
+                                })}
+                              >
+                                <Plus size={14} />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-6 w-6 text-slate-300 hover:text-red-500"
+                                onClick={() => {
+                                  if (confirm(`Delete region "${region.name}" and all its contents?`)) {
+                                    deleteRegion(region.id);
+                                  }
+                                }}
+                              >
+                                <Trash2 size={12} />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     
                     {(expandedRegions.includes(region.id) || searchQuery) && (
                       <div className="pl-4 space-y-4 border-l border-slate-100 ml-2">
@@ -165,19 +182,33 @@ export const Sidebar = () => {
                                 </button>
                                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
                                   {user && (
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      className="h-6 w-6"
-                                      onClick={() => addArea({
-                                        id: Math.random().toString(36).substr(2, 9),
-                                        name: 'New Area',
-                                        color: cluster.color,
-                                        clusterId: cluster.id
-                                      })}
-                                    >
-                                      <Plus size={14} />
-                                    </Button>
+                                    <>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-6 w-6"
+                                        onClick={() => addArea({
+                                          id: Math.random().toString(36).substr(2, 9),
+                                          name: 'New Area',
+                                          color: cluster.color,
+                                          clusterId: cluster.id
+                                        })}
+                                      >
+                                        <Plus size={14} />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-6 w-6 text-slate-300 hover:text-red-500"
+                                        onClick={() => {
+                                          if (confirm(`Delete cluster "${cluster.name}" and all its contents?`)) {
+                                            deleteCluster(cluster.id);
+                                          }
+                                        }}
+                                      >
+                                        <Trash2 size={12} />
+                                      </Button>
+                                    </>
                                   )}
                                   <Button 
                                     variant="ghost" 
@@ -214,14 +245,30 @@ export const Sidebar = () => {
                                             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: area.color }} />
                                             {area.name}
                                           </button>
-                                          <Button 
-                                            variant="ghost" 
-                                            size="icon" 
-                                            className="h-5 w-5 opacity-0 group-hover:opacity-100"
-                                            onClick={() => setSelectedArea(area.id)}
-                                          >
-                                            <Settings2 size={12} />
-                                          </Button>
+                                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                                            <Button 
+                                              variant="ghost" 
+                                              size="icon" 
+                                              className="h-5 w-5"
+                                              onClick={() => setSelectedArea(area.id)}
+                                            >
+                                              <Settings2 size={12} />
+                                            </Button>
+                                            {user && (
+                                              <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="h-5 w-5 text-slate-300 hover:text-red-500"
+                                                onClick={() => {
+                                                  if (confirm(`Delete area "${area.name}" and all its contents?`)) {
+                                                    deleteArea(area.id);
+                                                  }
+                                                }}
+                                              >
+                                                <Trash2 size={12} />
+                                              </Button>
+                                            )}
+                                          </div>
                                         </div>
                                         
                                         {(selectedAreaId === area.id || searchQuery) && (
