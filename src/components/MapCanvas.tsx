@@ -10,6 +10,28 @@ export const MapCanvas = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
+  // Calculate combined bounding box for selected elements
+  const selectedElements = kecamatans.filter(k => selectedKecamatanIds.includes(k.id));
+  const combinedBBox = React.useMemo(() => {
+    if (selectedElements.length === 0) return null;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    selectedElements.forEach(k => {
+      const x = k.position.x || 0;
+      const y = k.position.y || 0;
+      // Assuming a default size if bbox is not available, or use path data
+      const w = 100 * (k.scale || 1); 
+      const h = 100 * (k.scale || 1);
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x + w);
+      maxY = Math.max(maxY, y + h);
+    });
+    
+    if (minX === Infinity || minY === Infinity || maxX === -Infinity || maxY === -Infinity) return null;
+    
+    return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+  }, [selectedElements]);
+
   const CANVAS_SIZE = 5000;
 
   const visibleKecamatans = kecamatans.filter((kec) => {
@@ -216,6 +238,24 @@ export const MapCanvas = () => {
                 strokeDasharray="4 4"
                 pointerEvents="none"
               />
+            )}
+
+            {combinedBBox && (
+              <g pointerEvents="none">
+                <rect
+                  x={combinedBBox.x}
+                  y={combinedBBox.y}
+                  width={combinedBBox.width}
+                  height={combinedBBox.height}
+                  fill="none"
+                  stroke="#8b5cf6"
+                  strokeWidth={2}
+                  strokeDasharray="4 4"
+                />
+                {/* Handles (simplified) */}
+                <circle cx={combinedBBox.x} cy={combinedBBox.y} r={6} fill="#8b5cf6" />
+                <circle cx={combinedBBox.x + combinedBBox.width} cy={combinedBBox.y + combinedBBox.height} r={6} fill="#8b5cf6" />
+              </g>
             )}
           </g>
         </svg>
