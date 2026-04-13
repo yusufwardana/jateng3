@@ -23,7 +23,8 @@ import {
   LogIn,
   LogOut,
   User as UserIcon,
-  Presentation
+  Presentation,
+  AlignLeft
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { useDropzone } from 'react-dropzone';
@@ -55,7 +56,8 @@ export const Toolbar = () => {
     lastSaved,
     user,
     selectedKecamatanIds,
-    setSelectedKecamatan
+    setSelectedKecamatan,
+    alignLeft
   } = useMapStore();
 
   const [email, setEmail] = useState('');
@@ -260,6 +262,11 @@ export const Toolbar = () => {
         )}
 
         <Separator orientation="vertical" className="h-8 mx-2" />
+
+        <Button variant="ghost" size="sm" className="text-slate-600 px-3" onClick={alignLeft} title="Align Left">
+          <AlignLeft size={16} className="mr-2" />
+          <span>Align Left</span>
+        </Button>
 
         <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 px-3" onClick={clearAll} title="Clear All">
           <Trash2 size={16} className="mr-2" />

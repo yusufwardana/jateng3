@@ -501,6 +501,19 @@ export const Sidebar = () => {
                           />
                         </div>
                         <div className="space-y-1.5 col-span-2">
+                          <Label htmlFor="kec-area" className="text-xs text-slate-500">Area</Label>
+                          <select
+                            id="kec-area"
+                            className="w-full h-9 rounded-md border border-slate-200 bg-white px-3 text-xs"
+                            value={selectedKecamatan.areaId}
+                            onChange={(e) => updateKecamatan(selectedKecamatan.id, { areaId: e.target.value })}
+                          >
+                            {areas.map(area => (
+                              <option key={area.id} value={area.id}>{area.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-1.5 col-span-2">
                           <Label htmlFor="kec-label" className="text-xs text-slate-500">Label</Label>
                           <Input 
                             id="kec-label" 

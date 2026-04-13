@@ -27,6 +27,7 @@ interface MapStore extends MapState {
   setPresentationMode: (mode: boolean) => void;
   setZoom: (zoom: number) => void;
   setPan: (pan: { x: number; y: number }) => void;
+  alignLeft: () => void;
   deleteKecamatan: (id: string) => void;
   deleteArea: (id: string) => void;
   deleteCluster: (id: string) => void;
@@ -122,6 +123,16 @@ export const useMapStore = create<MapStore>()(
       setPresentationMode: (mode) => set({ isPresentationMode: mode }),
       setZoom: (zoom) => set({ zoom }),
       setPan: (pan) => set({ pan }),
+      alignLeft: () => set((state) => {
+        if (state.kecamatans.length === 0) return state;
+        const minX = Math.min(...state.kecamatans.map(k => k.position.x));
+        return {
+          kecamatans: state.kecamatans.map(k => ({
+            ...k,
+            position: { ...k.position, x: k.position.x - minX }
+          }))
+        };
+      }),
 
       deleteKecamatan: (id) => set((state) => ({
         kecamatans: state.kecamatans.filter((k) => k.id !== id),
