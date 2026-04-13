@@ -48,7 +48,6 @@ export const Sidebar = () => {
     deleteRegion,
     addCluster,
     addArea,
-    resizeSelectedKecamatans,
     user
   } = useMapStore();
 
@@ -539,7 +538,7 @@ export const Sidebar = () => {
                           min={0.1} 
                           max={3} 
                           step={0.05}
-                          onValueChange={(vals: number[]) => resizeSelectedKecamatans(vals[0])}
+                          onValueChange={(vals: number[]) => updateKecamatan(selectedKecamatan.id, { scale: vals[0] })}
                         />
                       </div>
                       
