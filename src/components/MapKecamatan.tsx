@@ -20,11 +20,50 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
     zoom 
   } = useMapStore();
   const [isDragging, setIsDragging] = useState(false);
+  const [resizing, setResizing] = useState<string | null>(null);
   const [bbox, setBbox] = useState<DOMRect | null>(null);
   const pathRef = useRef<SVGPathElement>(null);
   
   const isSelected = selectedKecamatanIds.includes(kecamatan.id);
   const isLocked = isAllLocked || kecamatan.isLocked || !user; // Lock if not logged in
+
+  useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (resizing && bbox) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Calculate scale change
+        const deltaX = e.movementX / zoom;
+        const deltaY = e.movementY / zoom;
+        
+        let newScale = kecamatan.scale || 1;
+        
+        // Simple scaling based on movement
+        if (resizing === 'nw' || resizing === 'se') {
+          newScale += (deltaX + deltaY) / 100;
+        } else {
+          newScale += (deltaX - deltaY) / 100;
+        }
+        
+        updateKecamatan(kecamatan.id, { scale: Math.max(0.1, Math.min(3, newScale)) });
+      }
+    };
+
+    const handlePointerUp = () => {
+      setResizing(null);
+    };
+
+    if (resizing) {
+      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('pointerup', handlePointerUp);
+    }
+    
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [resizing, bbox, zoom, kecamatan.id, kecamatan.scale, updateKecamatan]);
 
   useEffect(() => {
     if (pathRef.current) {
@@ -127,6 +166,16 @@ export const MapKecamatan: React.FC<MapKecamatanProps> = ({ kecamatan }) => {
           rx="4"
           className="pointer-events-none transition-colors"
         />
+      )}
+
+      {/* Resize Handles */}
+      {isSelected && !isLocked && bbox && (
+        <>
+          <rect x={bbox.x - 8} y={bbox.y - 8} width={12} height={12} fill="#fff" stroke="#f97316" strokeWidth={2} className="cursor-nwse-resize" onPointerDown={(e) => { e.stopPropagation(); setResizing('nw'); }} />
+          <rect x={bbox.x + bbox.width - 4} y={bbox.y - 8} width={12} height={12} fill="#fff" stroke="#f97316" strokeWidth={2} className="cursor-nesw-resize" onPointerDown={(e) => { e.stopPropagation(); setResizing('ne'); }} />
+          <rect x={bbox.x - 8} y={bbox.y + bbox.height - 4} width={12} height={12} fill="#fff" stroke="#f97316" strokeWidth={2} className="cursor-nesw-resize" onPointerDown={(e) => { e.stopPropagation(); setResizing('sw'); }} />
+          <rect x={bbox.x + bbox.width - 4} y={bbox.y + bbox.height - 4} width={12} height={12} fill="#fff" stroke="#f97316" strokeWidth={2} className="cursor-nwse-resize" onPointerDown={(e) => { e.stopPropagation(); setResizing('se'); }} />
+        </>
       )}
 
       <path
