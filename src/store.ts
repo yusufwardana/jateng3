@@ -119,7 +119,10 @@ export const useMapStore = create<MapStore>()(
       setSelectedArea: (id) => set({ selectedAreaId: id }),
       setSelectedCluster: (id) => set({ selectedClusterId: id }),
       setSelectedRegion: (id) => set({ selectedRegionId: id }),
-      setAllLocked: (locked) => set({ isAllLocked: locked }),
+      setAllLocked: (locked) => set((state) => ({
+        isAllLocked: locked,
+        kecamatans: state.kecamatans.map(k => ({ ...k, isLocked: locked }))
+      })),
       setPresentationMode: (mode) => set({ isPresentationMode: mode }),
       setZoom: (zoom) => set({ zoom }),
       setPan: (pan) => set({ pan }),
