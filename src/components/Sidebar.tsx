@@ -48,6 +48,7 @@ export const Sidebar = () => {
     deleteRegion,
     addCluster,
     addArea,
+    updateSelectedKecamatans,
     user
   } = useMapStore();
 
@@ -538,7 +539,7 @@ export const Sidebar = () => {
                           min={0.1} 
                           max={3} 
                           step={0.05}
-                          onValueChange={(vals: number[]) => updateKecamatan(selectedKecamatan.id, { scale: vals[0] })}
+                          onValueChange={(vals: number[]) => updateSelectedKecamatans({ scale: vals[0] })}
                         />
                       </div>
                       
@@ -646,6 +647,19 @@ export const Sidebar = () => {
                           />
                         </div>
                       </div>
+                      <Button 
+                        variant="outline" 
+                        className="w-full text-xs"
+                        onClick={() => {
+                          areas.filter(a => a.clusterId === selectedCluster.id).forEach(area => {
+                            kecamatans.filter(k => k.areaId === area.id).forEach(k => {
+                              updateKecamatan(k.id, { color: selectedCluster.color });
+                            });
+                          });
+                        }}
+                      >
+                        Apply color to all kecamatans in cluster
+                      </Button>
                     </div>
                   )}
                 </div>

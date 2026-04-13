@@ -12,6 +12,7 @@ interface MapStore extends MapState {
   addArea: (area: Area) => void;
   addKecamatan: (kecamatan: Kecamatan) => void;
   updateKecamatan: (id: string, updates: Partial<Kecamatan>) => void;
+  updateSelectedKecamatans: (updates: Partial<Kecamatan>) => void;
   updateArea: (id: string, updates: Partial<Area>) => void;
   updateCluster: (id: string, updates: Partial<Cluster>) => void;
   updateRegion: (id: string, updates: Partial<Region>) => void;
@@ -69,6 +70,14 @@ export const useMapStore = create<MapStore>()(
       
       updateKecamatan: (id, updates) => set((state) => ({
         kecamatans: state.kecamatans.map((k) => (k.id === id ? { ...k, ...updates } : k))
+      })),
+
+      updateSelectedKecamatans: (updates) => set((state) => ({
+        kecamatans: state.kecamatans.map((k) => 
+          state.selectedKecamatanIds.includes(k.id) 
+            ? { ...k, ...updates } 
+            : k
+        )
       })),
 
       updateArea: (id, updates) => set((state) => ({
