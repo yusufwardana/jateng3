@@ -12,7 +12,7 @@ interface MapStore extends MapState {
   addArea: (area: Area) => void;
   addKecamatan: (kecamatan: Kecamatan) => void;
   updateKecamatan: (id: string, updates: Partial<Kecamatan>) => void;
-  updateSelectedKecamatans: (updates: Partial<Kecamatan>) => void;
+  resizeSelectedKecamatans: (newScale: number) => void;
   updateArea: (id: string, updates: Partial<Area>) => void;
   updateCluster: (id: string, updates: Partial<Cluster>) => void;
   updateRegion: (id: string, updates: Partial<Region>) => void;
@@ -72,13 +72,38 @@ export const useMapStore = create<MapStore>()(
         kecamatans: state.kecamatans.map((k) => (k.id === id ? { ...k, ...updates } : k))
       })),
 
-      updateSelectedKecamatans: (updates) => set((state) => ({
-        kecamatans: state.kecamatans.map((k) => 
-          state.selectedKecamatanIds.includes(k.id) 
-            ? { ...k, ...updates } 
-            : k
-        )
-      })),
+      resizeSelectedKecamatans: (newScale) => set((state) => {
+        const selected = state.kecamatans.filter(k => state.selectedKecamatanIds.includes(k.id) && !k.isLocked);
+        if (selected.length === 0) return state;
+
+        // Calculate center of selected elements
+        const centerX = selected.reduce((sum, k) => sum + k.position.x, 0) / selected.length;
+        const centerY = selected.reduce((sum, k) => sum + k.position.y, 0) / selected.length;
+
+        // Use the scale of the first selected element as the old scale
+        const oldScale = selected[0].scale || 1;
+        const scaleRatio = newScale / oldScale;
+
+        return {
+          kecamatans: state.kecamatans.map(k => {
+            if (state.selectedKecamatanIds.includes(k.id) && !k.isLocked) {
+              // Calculate new position relative to center
+              const dx = k.position.x - centerX;
+              const dy = k.position.y - centerY;
+              
+              return {
+                ...k,
+                scale: newScale,
+                position: {
+                  x: centerX + dx * scaleRatio,
+                  y: centerY + dy * scaleRatio
+                }
+              };
+            }
+            return k;
+          })
+        };
+      }),
 
       updateArea: (id, updates) => set((state) => ({
         areas: state.areas.map((a) => (a.id === id ? { ...a, ...updates } : a))
